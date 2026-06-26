@@ -115,12 +115,26 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
     <button class="btn-del-folder" onclick="delFolder()">删</button>
   </div>
 
-  <!-- 步骤2: 模式 -->
-  <div style="padding:8px 10px 4px;max-width:500px;margin:0 auto;text-align:center;color:#999;font-size:12px">步骤2 — 选择扫描类型</div>
+  <!-- 步骤2: 扫描类型 -->
+  <div style="padding:8px 10px 4px;max-width:500px;margin:0 auto;text-align:center;color:#999;font-size:12px">步骤2 — 扫描类型</div>
   <div class="mode-bar">
     <button id="btn-barcode" class="active" onclick="setMode('barcode')">条形码</button>
     <button id="btn-qrcode" onclick="setMode('qrcode')">二维码</button>
-    <button id="btn-both" onclick="setMode('both')">条码+二维码</button>
+  </div>
+
+  <!-- 步骤2.5: 条码过滤 -->
+  <div style="padding:4px 10px 2px;max-width:500px;margin:0 auto;text-align:center;color:#999;font-size:12px">条码过滤</div>
+  <div class="mode-bar">
+    <button id="btn-any" class="active" onclick="setFilter('any')">任意</button>
+    <button id="btn-digit" onclick="setFilter('digit')">数字开头</button>
+    <button id="btn-letter" onclick="setFilter('letter')">字母开头</button>
+  </div>
+
+  <!-- 步骤2.6: 计数模式 -->
+  <div style="padding:4px 10px 2px;max-width:500px;margin:0 auto;text-align:center;color:#999;font-size:12px">计数模式</div>
+  <div class="mode-bar">
+    <button id="btn-dup" class="active" onclick="setCountMode('dup')">重复保留(每扫一行)</button>
+    <button id="btn-count" onclick="setCountMode('count')">自动计数(叠加数量)</button>
   </div>
 
   <!-- 步骤3: 开扫 -->
@@ -255,10 +269,18 @@ function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 function escAttr(s){return(s||'').replace(/"/g,'&quot;');}
 
 // ═══════ 扫码 ═══════
-let scanMode='barcode',scanner=null,scanning=false;
+let scanMode='barcode',scanner=null,scanning=false,filterMode='any',countMode='dup';
 
-function setMode(m){scanMode=m;document.querySelectorAll('.mode-bar button').forEach(b=>b.classList.remove('active'));document.getElementById('btn-'+m).classList.add('active');if(scanning){stopScan();startScan();}}
-function modeFmts(){if(scanMode==='barcode')return[Html5QrcodeSupportedFormats.CODE_128,Html5QrcodeSupportedFormats.CODE_39,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E,Html5QrcodeSupportedFormats.CODABAR,Html5QrcodeSupportedFormats.ITF,Html5QrcodeSupportedFormats.PDF_417,Html5QrcodeSupportedFormats.AZTEC,Html5QrcodeSupportedFormats.DATA_MATRIX,Html5QrcodeSupportedFormats.MAXICODE];if(scanMode==='qrcode')return[Html5QrcodeSupportedFormats.QR_CODE];return undefined;}
+function setFilter(m){filterMode=m;document.querySelectorAll('.mode-bar').forEach(b=>{if(['any','digit','letter'].includes(b.id.split('-')[1]))b.classList.remove('active')});document.getElementById('btn-'+m).classList.add('active');}
+function setCountMode(m){countMode=m;['btn-dup','btn-count'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById('btn-'+m).classList.add('active');}
+
+function matchFilter(bc){
+  if(filterMode==='digit')return /^\d/.test(bc);
+  if(filterMode==='letter')return /^[A-Za-z]/.test(bc);
+  return true;
+}
+
+function setMode(m){scanMode=m;['btn-barcode','btn-qrcode'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById('btn-'+m).classList.add('active');if(scanning){stopScan();startScan();}}
 
 async function startScan(){
   if(scanning)return;
@@ -275,6 +297,7 @@ async function startScan(){
       async text=>{
         const bc=text.trim();
         if(scanCooldown||bc===lastBarcode){return;}
+        if(!matchFilter(bc)){toast('已过滤: '+bc);return;}
         lastBarcode=bc;
         await addScan(bc);
         showScanPop(bc);
@@ -312,11 +335,16 @@ function startCooldown(ms=1800){
 
 // ═══════ 操作 ═══════
 async function addScan(bc){
+  if(countMode==='count'){
+    // 自动计数：找已存在的条码叠加数量
+    const exist=scans.find(s=>s.bc===bc);
+    if(exist){exist.qty=(exist.qty||1)+1;await dbPut({name:currentFolder,scans});await render();return;}
+  }
   scans.push({bc,qty:1,r1:'',r2:'',r3:'',time:new Date().toLocaleString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})});
   await dbPut({name:currentFolder,scans});
   await render();
 }
-async function manualAdd(){const v=document.getElementById('manualInput').value.trim();if(!v)return;await addScan(v);document.getElementById('manualInput').value='';document.getElementById('manualInput').focus();showScanPop(v);speak(v+' 扫码成功');}
+async function manualAdd(){const v=document.getElementById('manualInput').value.trim();if(!v)return;if(!matchFilter(v)){toast('已过滤: '+v);document.getElementById('manualInput').value='';return;}await addScan(v);document.getElementById('manualInput').value='';document.getElementById('manualInput').focus();showScanPop(v);speak(v+' 扫码成功');}
 function openModal(i){editId=i;const s=scans[i];document.getElementById('modalBc').textContent='条码: '+s.bc;document.getElementById('editQty').value=s.qty||1;document.getElementById('r1').value=s.r1||'';document.getElementById('r2').value=s.r2||'';document.getElementById('r3').value=s.r3||'';document.getElementById('modalBg').classList.add('show');}
 function closeModal(){document.getElementById('modalBg').classList.remove('show');editId=null;}
 async function saveRemarks(){
