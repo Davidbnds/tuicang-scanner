@@ -242,7 +242,7 @@ function escAttr(s){return(s||'').replace(/"/g,'&quot;');}
 // ═══════ 扫码 ═══════
 let scanMode='barcode',scanner=null,scanning=false,filterMode='any',countMode='dup';
 function setMode(m){scanMode=m;['btn-barcode','btn-qrcode'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById('btn-'+m).classList.add('active');if(scanning){stopScan();startScan();}}
-function setFilter(m){filterMode=m;['btn-any','btn-digit','btn-letter'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById('btn-'+m).classList.add('active');}
+function setFilter(m){if(filterMode===m){m='any';}filterMode=m;['btn-any','btn-digit','btn-letter'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById('btn-'+m).classList.add('active');}
 function setCountMode(m){countMode=m;['btn-dup','btn-count'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById('btn-'+m).classList.add('active');}
 function matchFilter(bc){if(filterMode==='digit')return /^\d/.test(bc);if(filterMode==='letter')return /^[A-Za-z]/.test(bc);return true;}
 
