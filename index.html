@@ -271,7 +271,7 @@ async function startScan(){
   await new Promise(r=>setTimeout(r,400));
   if(!scanner)scanner=new Html5Qrcode("reader");
   try{
-    await scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:250,height:160},formatsToSupport:undefined},
+    await scanner.start({facingMode:"environment"},{fps:15,qrbox:{width:250,height:160},aspectRatio:1.0,experimentalFeatures:{useBarCodeDetectorIfSupported:true}},
       async text=>{
         const bc=text.trim();
         if(scanCooldown||bc===lastBarcode){return;}
