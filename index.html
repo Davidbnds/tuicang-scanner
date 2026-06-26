@@ -44,7 +44,8 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
 .toggle-row button.active{border-color:#4472C4;background:#e8f0fe;color:#4472C4}
 /* 扫码区 */
 #reader-wrap{margin:6px auto;max-width:500px}
-#reader{width:100%;max-width:360px;height:240px;border:3px solid #4472C4;border-radius:10px;overflow:hidden;background:#000;margin:0 auto}
+#reader{width:100%;max-width:100%;height:auto;min-height:260px;border:0;overflow:hidden;background:#000;margin:0 auto}
+#reader video{width:100%!important;height:auto!important;object-fit:cover}
 .manual-bar{display:flex;gap:5px;padding:6px 10px;max-width:500px;margin:0 auto}
 .manual-bar input{flex:1;padding:9px;border:2px solid #ddd;border-radius:8px;font-size:13px;font-family:Consolas,monospace;outline:none}
 .manual-bar input:focus{border-color:#4472C4}
@@ -291,8 +292,8 @@ async function startScan(){
   scanner=new Html5Qrcode("reader");
   try{
     await scanner.start(
-      {facingMode:"environment"},
-      {fps:30},
+      {facingMode:"environment",width:{ideal:1280},height:{ideal:720}},
+      {fps:30,aspectRatio:1.777},
       async text=>{
         const bc=text.trim();
         if(scanCooldown)return;
