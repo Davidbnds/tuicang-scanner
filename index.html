@@ -131,7 +131,7 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
   </div>
 
   <!-- 扫码区域（默认隐藏，冻结在顶部） -->
-  <div id="scanArea" style="display:none;position:sticky;top:48px;z-index:50;background:#f0f2f5;padding-bottom:6px;border-bottom:2px solid #ddd">
+  <div id="scanArea" style="position:sticky;top:48px;z-index:50;background:#f0f2f5;padding-bottom:6px;border-bottom:2px solid #ddd">
     <div class="manual-bar">
       <input type="text" id="manualInput" placeholder="手动输入条码">
       <button onclick="manualAdd()">添加</button>
@@ -261,7 +261,14 @@ function setMode(m){scanMode=m;document.querySelectorAll('.mode-bar button').for
 function modeFmts(){if(scanMode==='barcode')return[Html5QrcodeSupportedFormats.CODE_128,Html5QrcodeSupportedFormats.CODE_39,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E,Html5QrcodeSupportedFormats.CODABAR,Html5QrcodeSupportedFormats.ITF,Html5QrcodeSupportedFormats.PDF_417,Html5QrcodeSupportedFormats.AZTEC,Html5QrcodeSupportedFormats.DATA_MATRIX,Html5QrcodeSupportedFormats.MAXICODE];if(scanMode==='qrcode')return[Html5QrcodeSupportedFormats.QR_CODE];return undefined;}
 
 async function startScan(){
-  if(scanning)return;if(!scanner)scanner=new Html5Qrcode("reader");
+  if(scanning)return;
+  // 先显示再初始化（否则黑屏）
+  const area=document.getElementById('scanArea');
+  area.style.display='block';
+  document.getElementById('btnStartScan').style.display='none';
+  document.getElementById('btnStopScan').style.display='block';
+  await new Promise(r=>requestAnimationFrame(r));
+  if(!scanner)scanner=new Html5Qrcode("reader");
   try{
     await scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:220,height:140},formatsToSupport:modeFmts()},
       async text=>{
@@ -275,9 +282,6 @@ async function startScan(){
       },
       ()=>{});
     scanning=true;
-    document.getElementById('scanArea').style.display='block';
-    document.getElementById('btnStartScan').style.display='none';
-    document.getElementById('btnStopScan').style.display='block';
   }catch(e){toast('摄像头失败: '+e.message);}
 }
 async function stopScan(){
