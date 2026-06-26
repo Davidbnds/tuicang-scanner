@@ -32,7 +32,7 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
 .btn-del-folder{background:#C00000;color:#fff;font-size:12px!important}
 /* 扫码区 */
 #reader-wrap{margin:6px auto;max-width:500px}
-#reader{width:100%;max-width:320px;height:200px;border:3px solid #4472C4;border-radius:10px;overflow:hidden;background:#000;margin:0 auto}
+#reader{width:100%;max-width:360px;height:240px;border:3px solid #4472C4;border-radius:10px;overflow:hidden;background:#000;margin:0 auto}
 .manual-bar{display:flex;gap:5px;padding:6px 10px;max-width:500px;margin:0 auto}
 .manual-bar input{flex:1;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;font-family:Consolas,monospace;outline:none}
 .manual-bar input:focus{border-color:#4472C4}
@@ -131,7 +131,7 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
   </div>
 
   <!-- 扫码区域（默认隐藏，冻结在顶部） -->
-  <div id="scanArea" style="position:sticky;top:48px;z-index:50;background:#f0f2f5;padding-bottom:6px;border-bottom:2px solid #ddd">
+  <div id="scanArea" style="display:none;position:sticky;top:48px;z-index:50;background:#f0f2f5;padding-bottom:6px;border-bottom:2px solid #ddd">
     <div class="manual-bar">
       <input type="text" id="manualInput" placeholder="手动输入条码">
       <button onclick="manualAdd()">添加</button>
@@ -262,15 +262,16 @@ function modeFmts(){if(scanMode==='barcode')return[Html5QrcodeSupportedFormats.C
 
 async function startScan(){
   if(scanning)return;
-  // 先显示再初始化（否则黑屏）
+  // 先显示元素，等布局完成再启动相机
   const area=document.getElementById('scanArea');
   area.style.display='block';
   document.getElementById('btnStartScan').style.display='none';
   document.getElementById('btnStopScan').style.display='block';
-  await new Promise(r=>requestAnimationFrame(r));
+  // 等 400ms 确保 DOM 渲染完毕
+  await new Promise(r=>setTimeout(r,400));
   if(!scanner)scanner=new Html5Qrcode("reader");
   try{
-    await scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:220,height:140},formatsToSupport:modeFmts()},
+    await scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:250,height:160},formatsToSupport:undefined},
       async text=>{
         const bc=text.trim();
         if(scanCooldown||bc===lastBarcode){return;}
