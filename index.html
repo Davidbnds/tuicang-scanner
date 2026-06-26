@@ -138,7 +138,15 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
     <button style="background:none;border:1px solid rgba(255,255,255,.4);color:rgba(255,255,255,.6);padding:5px 8px;border-radius:5px;font-size:10px;cursor:pointer" onclick="if(confirm('清空「'+cf+'」？'))ca()">清空</button>
   </div>
   <!-- Camera -->
-  <div class="camera-zone" id="cameraZone"><div id="reader"></div><div class="overlay" id="camHint">就绪</div><button style="position:absolute;top:6px;right:6px;z-index:10;background:rgba(0,0,0,.5);border:none;color:#fff;font-size:20px;padding:6px 10px;border-radius:8px;cursor:pointer" onclick="openSettings()">⚙</button></div>
+  <div class="camera-zone" id="cameraZone">
+    <div id="reader"></div>
+    <div class="overlay" id="camHint">就绪</div>
+    <button style="position:absolute;top:6px;right:6px;z-index:10;background:rgba(0,0,0,.5);border:none;color:#fff;font-size:20px;padding:6px 10px;border-radius:8px;cursor:pointer" onclick="openSettings()">⚙</button>
+    <div style="position:absolute;bottom:8px;left:8px;right:8px;z-index:10;display:flex;gap:4px">
+      <input type="text" id="manualInput" placeholder="手动输入条码" style="flex:1;padding:8px;border:1px solid rgba(255,255,255,.4);border-radius:6px;font-size:13px;background:rgba(0,0,0,.6);color:#fff;outline:none;font-family:Consolas,monospace" onkeydown="if(event.key==='Enter')manualAdd()">
+      <button onclick="manualAdd()" style="padding:8px 12px;background:#4472C4;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer">添加</button>
+    </div>
+  </div>
   <!-- Toolbar -->
   <div class="toolbar">
     <select class="folder-select" id="folderSelect" onchange="sf()"></select>
@@ -147,11 +155,6 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
     <button class="btn-settings" onclick="openSettings()">⚙</button>
     <button class="btn-start" id="btnStart" onclick="startScan()">开始</button>
     <button class="btn-stop" id="btnStop" onclick="stopScan()">停止</button>
-  </div>
-  <!-- Manual input -->
-  <div class="manual-row">
-    <input type="text" id="manualInput" placeholder="手动输入条码，回车添加">
-    <button onclick="manualAdd()">添加</button>
   </div>
   <!-- List -->
   <div class="list-wrap" id="listWrap"><div class="empty">暂无记录</div></div>
