@@ -243,8 +243,14 @@ async function startScan(){
   document.getElementById('video-area').style.display='block';
   document.getElementById('btnStartScan').style.display='none';
   document.getElementById('btnStopScan').style.display='block';
-  document.getElementById('hint').textContent='摄像头开启中…';
+  document.getElementById('hint').textContent='请求摄像头权限…';
   try{
+    // 先手动获取摄像头流
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+    video.srcObject=stream;
+    video.play();
+    document.getElementById('hint').textContent='摄像头已开启，对准条码…';
+    // 用 ZXing 从这个流解码
     sc=await cr.decodeFromVideoDevice(null,video,(result,err)=>{
       if(result){
         const bc=result.getText().trim();
@@ -254,16 +260,18 @@ async function startScan(){
       }
     });
     sg=true;
-    document.getElementById('hint').textContent='摄像头已开启，对准条码…';
   }catch(e){
-    document.getElementById('hint').textContent='错误: '+e.message;
-    toast('摄像头错误');
+    document.getElementById('hint').textContent='摄像头失败: '+e.message;
+    toast('无法打开摄像头');
     stopScan();
   }
 }
 
 async function stopScan(){
   if(sc){try{await sc.stop();}catch(e){}sc=null;}
+  // 停止视频流
+  const video=document.getElementById('video');
+  if(video.srcObject){video.srcObject.getTracks().forEach(t=>t.stop());video.srcObject=null;}
   sg=false;
   document.getElementById('btnStartScan').style.display='block';
   document.getElementById('btnStopScan').style.display='none';
