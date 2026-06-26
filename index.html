@@ -138,7 +138,7 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
     <button style="background:none;border:1px solid rgba(255,255,255,.4);color:rgba(255,255,255,.6);padding:5px 8px;border-radius:5px;font-size:10px;cursor:pointer" onclick="if(confirm('清空「'+cf+'」？'))ca()">清空</button>
   </div>
   <!-- Camera -->
-  <div class="camera-zone" id="cameraZone"><div id="reader"></div><div class="overlay" id="camHint">就绪</div></div>
+  <div class="camera-zone" id="cameraZone"><div id="reader"></div><div class="overlay" id="camHint">就绪</div><button style="position:absolute;top:6px;right:6px;z-index:10;background:rgba(0,0,0,.5);border:none;color:#fff;font-size:20px;padding:6px 10px;border-radius:8px;cursor:pointer" onclick="openSettings()">⚙</button></div>
   <!-- Toolbar -->
   <div class="toolbar">
     <select class="folder-select" id="folderSelect" onchange="sf()"></select>
@@ -233,7 +233,7 @@ function backHome(){stopScan();document.getElementById('mainPage').style.display
 if(localStorage.getItem('_auth')==='1'){document.getElementById('loginPage').style.display='none';document.getElementById('homePage').style.display='flex';}
 
 function setCameraHeight(){
-  const h=Math.floor(window.innerHeight/3);
+  const h=Math.floor(window.innerHeight*0.28);
   document.getElementById('cameraZone').style.height=h+'px';
 }
 window.addEventListener('resize',setCameraHeight);
