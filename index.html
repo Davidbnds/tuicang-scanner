@@ -151,6 +151,16 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
     <button id="btn-count" onclick="setCountMode('count')">自动计数·叠加数量</button>
   </div>
 
+  <!-- 扫码间隔 -->
+  <div class="section-label">扫码间隔</div>
+  <div class="toggle-row">
+    <button id="btn-gap0" onclick="setGap(0)">无间隔</button>
+    <button id="btn-gap500" class="active" onclick="setGap(500)">0.5秒</button>
+    <button id="btn-gap1000" onclick="setGap(1000)">1秒</button>
+    <button id="btn-gap1500" onclick="setGap(1500)">1.5秒</button>
+    <button id="btn-gap2000" onclick="setGap(2000)">2秒</button>
+  </div>
+
   <!-- 开始/停止 -->
   <div class="act-bar">
     <button class="b-start" id="btnStartScan" onclick="startScan()">开始扫码</button>
@@ -240,19 +250,43 @@ function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 function escAttr(s){return(s||'').replace(/"/g,'&quot;');}
 
 // ═══════ 扫码 ═══════
-let scanMode='barcode',scanner=null,scanning=false,filterMode='any',countMode='dup';
+let scanMode='barcode',scanner=null,scanning=false,filterMode='any',countMode='dup',scanGap=500,voiceReady=false;
 function setMode(m){scanMode=m;['btn-barcode','btn-qrcode'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById('btn-'+m).classList.add('active');if(scanning){stopScan();startScan();}}
 function setFilter(m){if(filterMode===m){m='any';}filterMode=m;['btn-any','btn-digit','btn-letter'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById('btn-'+m).classList.add('active');}
 function setCountMode(m){countMode=m;['btn-dup','btn-count'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById('btn-'+m).classList.add('active');}
 function matchFilter(bc){if(filterMode==='digit')return /^\d/.test(bc);if(filterMode==='letter')return /^[A-Za-z]/.test(bc);return true;}
+function setGap(ms){scanGap=ms;['btn-gap0','btn-gap500','btn-gap1000','btn-gap1500','btn-gap2000'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById('btn-gap'+(ms||0)).classList.add('active');}
 
-let scanCooldown=false,lastBarcode='';
-function showScanPop(bc){const p=document.getElementById('scanPop');p.textContent='✓ '+bc;p.classList.add('show');clearTimeout(p._t);p._t=setTimeout(()=>p.classList.remove('show'),1000);}
-function speak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.rate=.9;setTimeout(()=>speechSynthesis.speak(u),80);}catch(e){}}
-function startCooldown(){scanCooldown=true;setTimeout(()=>scanCooldown=false,1500);}
+let scanCooldown=false;
+function showScanPop(bc){const p=document.getElementById('scanPop');p.textContent='✓ '+bc;p.classList.add('show');clearTimeout(p._t);p._t=setTimeout(()=>p.classList.remove('show'),900);}
+function speak(t){
+  if(!voiceReady)return;
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(t);
+    u.lang='zh-CN';u.rate=1;u.pitch=1.1;u.volume=1;
+    // 选女声
+    const voices=speechSynthesis.getVoices();
+    const female=voices.find(v=>v.lang.startsWith('zh')&&v.name.includes('Female'))||voices.find(v=>v.lang.startsWith('zh'));
+    if(female)u.voice=female;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function initVoice(){
+  // 点击按钮时预激活语音
+  const u=new SpeechSynthesisUtterance('');u.volume=0;speechSynthesis.speak(u);
+  voiceReady=true;
+  // 确保 voices 加载（有些浏览器异步）
+  let voices=speechSynthesis.getVoices();
+  if(!voices.length){
+    speechSynthesis.onvoiceschanged=()=>{speechSynthesis.getVoices();};
+  }
+}
+function startCooldown(){if(scanGap===0)return;scanCooldown=true;setTimeout(()=>scanCooldown=false,scanGap);}
 
 async function startScan(){
   if(scanning)return;
+  initVoice(); // 预激活语音
   if(scanner){try{await scanner.stop();}catch(e){}scanner.clear();scanner=null;}
   scanner=new Html5Qrcode("reader");
   try{
@@ -261,10 +295,10 @@ async function startScan(){
       {fps:10,qrbox:{width:280,height:180},disableFlip:false},
       async text=>{
         const bc=text.trim();
-        if(scanCooldown||bc===lastBarcode)return;
+        if(scanCooldown)return;
         if(!matchFilter(bc)){toast('已过滤');return;}
-        lastBarcode=bc;await addScan(bc);
-        showScanPop(bc);speak(bc+' 扫码成功');startCooldown();
+        await addScan(bc);
+        showScanPop(bc);speak(bc+'，扫码成功');startCooldown();
       },
       ()=>{});
     scanning=true;
