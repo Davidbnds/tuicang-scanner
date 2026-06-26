@@ -157,14 +157,14 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
     <button class="b-stop" id="btnStopScan" onclick="stopScan()">停止扫码</button>
   </div>
 
-  <!-- 扫码区域 -->
-  <div id="scanArea" style="position:sticky;top:44px;z-index:50;background:#f0f2f5;padding-bottom:6px;border-bottom:2px solid #ddd">
+  <!-- 扫码区域 — 始终可见 -->
+  <div style="position:sticky;top:44px;z-index:50;background:#f0f2f5;padding-bottom:6px;border-bottom:2px solid #ddd">
     <div class="manual-bar">
       <input type="text" id="manualInput" placeholder="手动输入条码">
       <button onclick="manualAdd()">添加</button>
     </div>
     <div id="reader-wrap"><div id="reader"></div></div>
-    <div class="section-label" id="hint" style="color:#548235">摄像头已开启，对准条码…</div>
+    <div class="section-label" id="hint">就绪，点「开始扫码」</div>
   </div>
 
   <!-- 操作 -->
@@ -216,7 +216,7 @@ async function sha256(m){const b=new TextEncoder().encode(m+SALT);const h=await 
 async function login(){const h=await sha256(document.getElementById('pwInput').value);if(h===PASS_HASH){document.getElementById('loginPage').style.display='none';document.getElementById('homePage').style.display='flex';document.getElementById('loginErr').textContent='';}else{document.getElementById('loginErr').textContent='密码错误';}}
 function logout(){stopScan();document.getElementById('loginPage').style.display='flex';document.getElementById('homePage').style.display='none';document.getElementById('mainPage').style.display='none';localStorage.removeItem('_auth');}
 function enterScan(){document.getElementById('homePage').style.display='none';document.getElementById('mainPage').style.display='block';init();}
-function backHome(){stopScan();document.getElementById('scanArea').style.display='none';document.getElementById('mainPage').style.display='none';document.getElementById('homePage').style.display='flex';}
+function backHome(){stopScan();document.getElementById('mainPage').style.display='none';document.getElementById('homePage').style.display='flex';}
 if(localStorage.getItem('_auth')==='1'){document.getElementById('loginPage').style.display='none';document.getElementById('homePage').style.display='flex';}
 
 // ═══════ DB ═══════
@@ -253,26 +253,24 @@ function startCooldown(){scanCooldown=true;setTimeout(()=>scanCooldown=false,150
 
 async function startScan(){
   if(scanning)return;
-  document.getElementById('btnStartScan').style.display='none';
-  document.getElementById('btnStopScan').style.display='block';
-  document.getElementById('scanArea').style.display='block';
-  // 重建 scanner，避免复用时黑屏
   if(scanner){try{await scanner.stop();}catch(e){}scanner.clear();scanner=null;}
-  await new Promise(r=>setTimeout(r,500));
   scanner=new Html5Qrcode("reader");
   try{
     await scanner.start({facingMode:"environment"},{fps:15,qrbox:{width:250,height:160},aspectRatio:1,experimentalFeatures:{useBarCodeDetectorIfSupported:true}},
       async text=>{const bc=text.trim();if(scanCooldown||bc===lastBarcode)return;if(!matchFilter(bc)){toast('已过滤');return;}lastBarcode=bc;await addScan(bc);showScanPop(bc);speak(bc+' 扫码成功');startCooldown();},
       ()=>{});
     scanning=true;
-  }catch(e){toast('摄像头失败: '+e.message);stopScan();}
+    document.getElementById('btnStartScan').style.display='none';
+    document.getElementById('btnStopScan').style.display='block';
+    document.getElementById('hint').textContent='摄像头已开启，对准条码…';
+  }catch(e){toast('摄像头错误: '+e.message);scanner=null;}
 }
 async function stopScan(){
   if(scanner){try{await scanner.stop();}catch(e){}scanner.clear();scanner=null;}
   scanning=false;
-  document.getElementById('scanArea').style.display='none';
   document.getElementById('btnStartScan').style.display='block';
   document.getElementById('btnStopScan').style.display='none';
+  document.getElementById('hint').textContent='就绪，点「开始扫码」';
 }
 
 // ═══════ 操作 ═══════
