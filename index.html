@@ -6,7 +6,7 @@
 <title>David扫码</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="David扫码">
-<script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -48,8 +48,6 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
 .b-stop{background:#999;color:#fff;display:none}
 .b-clear{background:#ED7D31;color:#fff}
 .b-export{background:#4472C4;color:#fff}
-#video-area{position:sticky;top:44px;z-index:50;background:#000;border-bottom:2px solid #ddd}
-#video-area video{width:100%;display:block;max-height:35vh}
 #list{max-width:500px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);padding-bottom:20px}
 .row{padding:7px 10px;border-bottom:1px solid #f3f3f3;cursor:pointer}
 .row:active{background:#e8f0fe}
@@ -145,7 +143,7 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
     <button class="b-stop" id="btnStopScan" onclick="stopScan()">停止扫码</button>
   </div>
 
-  <div id="video-area"><video id="video"></video></div>
+  <div id="reader" style="width:100%;max-width:500px;margin:0 auto"></div>
   <div class="manual-bar">
     <input type="text" id="manualInput" placeholder="手动输入条码">
     <button onclick="manualAdd()">添加</button>
@@ -217,10 +215,8 @@ async function rr(){const s=await dg(cf);scans=s.scans;document.getElementById('
 function eh(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function ea(s){return(s||'').replace(/"/g,'&quot;');}
 
-// ═══════ ZXing 扫码 ═══════
-let sm='barcode',sc=null,sg=false,fm='any',cm='dup',gp=500,co=false,lb='';
-const cr=new ZXing.BrowserMultiFormatReader();
-const hints=new Map();hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[ZXing.BarcodeFormat.CODE_128,ZXing.BarcodeFormat.CODE_39,ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.EAN_8,ZXing.BarcodeFormat.UPC_A,ZXing.BarcodeFormat.UPC_E,ZXing.BarcodeFormat.CODABAR,ZXing.BarcodeFormat.ITF,ZXing.BarcodeFormat.QR_CODE,ZXing.BarcodeFormat.DATA_MATRIX,ZXing.BarcodeFormat.PDF_417,ZXing.BarcodeFormat.AZTEC]);
+// ═══════ 扫码 ═══════
+let sc=null,sg=false,fm='any',cm='dup',gp=500,co=false,lb='';
 
 function setFilter(m){if(fm===m){m='any';}fm=m;['btn-any','btn-digit','btn-letter'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById('btn-'+m).classList.add('active');}
 function setCountMode(m){cm=m;['btn-dup','btn-count'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById('btn-'+m).classList.add('active');}
@@ -228,50 +224,40 @@ function setGap(ms){gp=ms;['btn-gap0','btn-gap500','btn-gap1000','btn-gap1500','
 function mf(bc){if(fm==='digit')return /^\d/.test(bc);if(fm==='letter')return /^[A-Za-z]/.test(bc);return true;}
 
 function showPop(bc){const p=document.getElementById('scanPop');p.textContent='✓ '+bc;p.classList.add('show');clearTimeout(p._t);p._t=setTimeout(()=>p.classList.remove('show'),900);}
-function tts(t){
-  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.rate=1;speechSynthesis.speak(u);}catch(e){}
-}
-function iVoice(){
-  const u=new SpeechSynthesisUtterance('');u.volume=0;speechSynthesis.speak(u);
-}
+function tts(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.rate=1;speechSynthesis.speak(u);}catch(e){}}
+function iVoice(){const u=new SpeechSynthesisUtterance('');u.volume=0;speechSynthesis.speak(u);}
 function scooldown(){if(gp===0)return;co=true;setTimeout(()=>co=false,gp);}
 
 async function startScan(){
   if(sg)return;
   iVoice();
-  const video=document.getElementById('video');
-  document.getElementById('video-area').style.display='block';
   document.getElementById('btnStartScan').style.display='none';
   document.getElementById('btnStopScan').style.display='block';
-  document.getElementById('hint').textContent='请求摄像头权限…';
+  document.getElementById('hint').textContent='摄像头开启中…';
+  sc=new Html5Qrcode("reader");
   try{
-    // 先手动获取摄像头流
-    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
-    video.srcObject=stream;
-    video.play();
-    document.getElementById('hint').textContent='摄像头已开启，对准条码…';
-    // 用 ZXing 从这个流解码
-    sc=await cr.decodeFromVideoDevice(null,video,(result,err)=>{
-      if(result){
-        const bc=result.getText().trim();
+    await sc.start(
+      {facingMode:"environment"},
+      {fps:30},
+      (text)=>{
+        const bc=text.trim();
         if(co)return;
         if(!mf(bc)){toast('已过滤');return;}
         add(bc);showPop(bc);tts(bc+' 扫码成功');scooldown();
-      }
-    });
+      },
+      ()=>{});
     sg=true;
+    document.getElementById('hint').textContent='摄像头已开启，对准条码…';
   }catch(e){
-    document.getElementById('hint').textContent='摄像头失败: '+e.message;
-    toast('无法打开摄像头');
-    stopScan();
+    document.getElementById('hint').textContent='错误: '+e.message;
+    toast('摄像头错误');sg=false;sc=null;
+    document.getElementById('btnStartScan').style.display='block';
+    document.getElementById('btnStopScan').style.display='none';
   }
 }
 
 async function stopScan(){
-  if(sc){try{await sc.stop();}catch(e){}sc=null;}
-  // 停止视频流
-  const video=document.getElementById('video');
-  if(video.srcObject){video.srcObject.getTracks().forEach(t=>t.stop());video.srcObject=null;}
+  if(sc){try{await sc.stop();}catch(e){}sc.clear();sc=null;}
   sg=false;
   document.getElementById('btnStartScan').style.display='block';
   document.getElementById('btnStopScan').style.display='none';
