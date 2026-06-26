@@ -5,71 +5,86 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
 <title>退仓扫码采集器</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="退仓扫码">
-<link rel="manifest" href="data:application/json,{}">
+<meta name="apple-mobile-web-app-title" content="扫码采集">
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;user-select:none;-webkit-user-select:none}
-/* 登录页 */
+body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;user-select:none}
 .login-page{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#1a1a2e,#16213e);display:flex;justify-content:center;align-items:center;z-index:9999}
-.login-card{background:#fff;border-radius:16px;padding:36px 28px;width:90%;max-width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)}
-.login-card h1{font-size:22px;margin-bottom:4px}
-.login-card .sub{color:#999;font-size:13px;margin-bottom:20px}
-.login-card input{width:100%;padding:13px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;text-align:center;outline:none;margin-bottom:6px}
+.login-card{background:#fff;border-radius:16px;padding:36px 28px;width:90%;max-width:360px;text-align:center}
+.login-card h1{font-size:22px;margin-bottom:16px}
+.login-card input{width:100%;padding:13px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;text-align:center;outline:none;margin-bottom:8px}
 .login-card input:focus{border-color:#4472C4}
-.login-card button{width:100%;padding:13px;background:#4472C4;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:6px}
+.login-card button{width:100%;padding:13px;background:#4472C4;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer}
 .login-err{color:#C00000;font-size:13px;margin-top:8px;min-height:20px}
-/* 主界面 */
 .main-page{display:none}
-.top{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:99}
-.top h1{font-size:16px}
-.top .info{font-size:11px;opacity:.7}
-.top .btn-out{background:none;border:1px solid rgba(255,255,255,.4);color:#fff;padding:5px 10px;border-radius:5px;font-size:11px;cursor:pointer}
-#reader-wrap{margin:8px auto;max-width:500px}
+/* 顶栏 */
+.top{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;padding:8px 12px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:99}
+.top h1{font-size:15px;flex:1}
+.top .btn-lock{background:none;border:1px solid rgba(255,255,255,.4);color:#fff;padding:5px 10px;border-radius:5px;font-size:11px;cursor:pointer}
+/* 文件夹栏 */
+.folder-bar{display:flex;gap:6px;padding:10px;max-width:500px;margin:0 auto;align-items:center}
+.folder-bar select{flex:1;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;background:#fff;outline:none}
+.folder-bar select:focus{border-color:#4472C4}
+.folder-bar button{padding:10px 12px;border:none;border-radius:8px;font-size:13px;font-weight:bold;cursor:pointer;white-space:nowrap}
+.btn-new{background:#548235;color:#fff}
+.btn-del-folder{background:#C00000;color:#fff;font-size:12px!important}
+/* 扫码区 */
+#reader-wrap{margin:6px auto;max-width:500px}
 #reader{width:100%;border:3px solid #4472C4;border-radius:10px;overflow:hidden;background:#000}
-.manual-bar{display:flex;gap:5px;padding:8px 10px;max-width:500px;margin:0 auto}
-.manual-bar input{flex:1;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:15px;font-family:Consolas,monospace;outline:none}
+.manual-bar{display:flex;gap:5px;padding:6px 10px;max-width:500px;margin:0 auto}
+.manual-bar input{flex:1;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;font-family:Consolas,monospace;outline:none}
 .manual-bar input:focus{border-color:#4472C4}
-.manual-bar button{padding:10px 16px;background:#4472C4;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;white-space:nowrap}
-.mode-bar{display:flex;gap:4px;padding:0 10px 6px;max-width:500px;margin:0 auto}
-.mode-bar button{flex:1;padding:7px 3px;border:2px solid #4472C4;border-radius:7px;font-size:12px;font-weight:bold;cursor:pointer;background:#fff;color:#4472C4}
+.manual-bar button{padding:10px 14px;background:#4472C4;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:bold;cursor:pointer}
+.mode-bar{display:flex;gap:4px;padding:0 10px;max-width:500px;margin:0 auto}
+.mode-bar button{flex:1;padding:7px 3px;border:2px solid #4472C4;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer;background:#fff;color:#4472C4}
 .mode-bar button.active{background:#4472C4;color:#fff}
 .act-bar{display:flex;gap:4px;padding:6px 10px;max-width:500px;margin:0 auto}
-.act-bar button{flex:1;padding:11px;border:none;border-radius:8px;font-size:13px;font-weight:bold;cursor:pointer}
+.act-bar button{flex:1;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:bold;cursor:pointer}
 .b-start{background:#548235;color:#fff}
 .b-stop{background:#999;color:#fff}
 .b-clear{background:#ED7D31;color:#fff}
 .b-export{background:#4472C4;color:#fff}
-.hint{text-align:center;padding:6px;font-size:13px;color:#888}
+.hint{text-align:center;padding:4px;font-size:12px;color:#888}
+/* 列表 */
 #list{max-width:500px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);padding-bottom:20px}
-.row{padding:8px 10px;border-bottom:1px solid #f3f3f3;cursor:pointer;transition:background .15s}
+.row{padding:8px 10px;border-bottom:1px solid #f3f3f3;cursor:pointer}
 .row:active{background:#e8f0fe}
 .row .main{display:flex;align-items:center;font-size:13px}
-.row .n{color:#999;font-size:11px;min-width:26px}
+.row .n{color:#999;font-size:11px;min-width:24px}
 .row .v{font-family:Consolas,monospace;flex:1;margin:0 6px;color:#333;font-size:14px;word-break:break-all}
+.row .q{color:#548235;font-weight:bold;margin-right:8px;font-size:12px}
 .row .t{font-size:11px;color:#aaa;white-space:nowrap}
-.row .tags{display:flex;gap:4px;margin-top:4px;margin-left:26px;flex-wrap:wrap}
-.row .tags span{font-size:11px;padding:2px 7px;border-radius:10px;background:#f0f0f0;color:#666;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .tags{display:flex;gap:4px;margin-top:3px;margin-left:24px;flex-wrap:wrap}
+.row .tags span{font-size:11px;padding:2px 7px;border-radius:10px;background:#f0f0f0;color:#666;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .row .tags span.filled{background:#e8f0fe;color:#4472C4}
 .empty-state{padding:50px;text-align:center;color:#bbb}
-.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;padding:12px 28px;border-radius:20px;font-size:15px;z-index:200;pointer-events:none;opacity:0;transition:opacity .2s}
-.toast.show{opacity:1}
-/* 备注弹窗 */
+/* 扫码成功浮层 */
+.scan-pop{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#548235;color:#fff;padding:20px 40px;border-radius:16px;font-size:18px;font-weight:bold;z-index:180;pointer-events:none;opacity:0;transition:opacity .15s}
+.scan-pop.show{opacity:1}
+/* 弹窗 */
 .modal-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:150;display:none;justify-content:center;align-items:center}
 .modal-bg.show{display:flex}
-.modal{background:#fff;border-radius:14px;padding:20px;width:90%;max-width:380px}
+.modal{background:#fff;border-radius:14px;padding:20px;width:90%;max-width:420px;max-height:85vh;overflow-y:auto}
 .modal h3{font-size:17px;margin-bottom:4px}
 .modal .sub{font-size:12px;color:#999;margin-bottom:12px;word-break:break-all}
-.modal label{display:block;font-size:13px;color:#666;margin-top:10px;margin-bottom:4px}
-.modal input{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:15px;outline:none}
+.modal label{display:block;font-size:13px;color:#666;margin-top:8px;margin-bottom:3px}
+.modal input{width:100%;padding:9px;border:1px solid #ddd;border-radius:8px;font-size:14px;outline:none}
 .modal input:focus{border-color:#4472C4}
-.modal .btns{display:flex;gap:8px;margin-top:16px}
-.modal .btns button{flex:1;padding:12px;border:none;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer}
+.modal .btns{display:flex;gap:8px;margin-top:14px}
+.modal .btns button{flex:1;padding:11px;border:none;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer}
 .btn-save{background:#4472C4;color:#fff}
 .btn-cancel{background:#eee;color:#666}
 .btn-del{background:#C00000;color:#fff;flex:0.5!important}
+/* 预览表 */
+.preview-table{width:100%;border-collapse:collapse;font-size:12px;margin:10px 0}
+.preview-table th{background:#4472C4;color:#fff;padding:6px 8px;text-align:center;position:sticky;top:0}
+.preview-table td{padding:5px 8px;text-align:center;border-bottom:1px solid #eee;font-family:Consolas,monospace;font-size:11px}
+.preview-table tr:nth-child(even){background:#f9f9f9}
+.preview-wrap{max-height:50vh;overflow-y:auto;border:1px solid #ddd;border-radius:8px}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;padding:12px 28px;border-radius:20px;font-size:15px;z-index:200;pointer-events:none;opacity:0;transition:opacity .2s}
+.toast.show{opacity:1}
 </style>
 </head>
 <body>
@@ -78,7 +93,6 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
 <div class="login-page" id="loginPage">
   <div class="login-card">
     <h1>退仓扫码采集器</h1>
-    <div class="sub">输入密码进入</div>
     <input type="password" id="pwInput" placeholder="密码" autofocus onkeydown="if(event.key==='Enter')login()">
     <button onclick="login()">登 录</button>
     <div class="login-err" id="loginErr"></div>
@@ -88,13 +102,20 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
 <!-- 主界面 -->
 <div class="main-page" id="mainPage">
   <div class="top">
-    <h1>退仓扫码</h1>
-    <span class="info"><b id="total">0</b>条 | 本地存储</span>
-    <button class="btn-out" onclick="logout()">锁定</button>
+    <h1>扫码采集</h1>
+    <span style="font-size:11px;opacity:.7" id="total">0条</span>
+    <button class="btn-lock" onclick="logout()">锁定</button>
+  </div>
+
+  <!-- 文件夹 -->
+  <div class="folder-bar">
+    <select id="folderSelect" onchange="switchFolder()"></select>
+    <button class="btn-new" onclick="newFolder()">+新建</button>
+    <button class="btn-del-folder" onclick="delFolder()">删</button>
   </div>
 
   <div class="manual-bar">
-    <input type="text" id="manualInput" placeholder="手动输入条码" onkeydown="if(event.key==='Enter')manualAdd()">
+    <input type="text" id="manualInput" placeholder="手动输入条码">
     <button onclick="manualAdd()">添加</button>
   </div>
 
@@ -110,287 +131,185 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
     <button class="b-start" onclick="startScan()">开始扫码</button>
     <button class="b-stop" onclick="stopScan()">停止</button>
     <button class="b-clear" onclick="clearAll()">清空</button>
-    <button class="b-export" onclick="exportExcel()">导出Excel</button>
+    <button class="b-export" onclick="previewExport()">导出Excel</button>
   </div>
 
-  <div class="hint" id="hint">选择模式，点「开始扫码」</div>
+  <div class="hint" id="hint">选模式 → 点开始扫码</div>
   <div id="list"><div class="empty-state">暂无记录</div></div>
-  <div class="toast" id="toast"></div>
+</div>
 
-  <!-- 备注弹窗 -->
-  <div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
-    <div class="modal">
-      <h3>编辑备注</h3><div class="sub" id="modalBc"></div>
-      <label>备注 1</label><input type="text" id="r1" placeholder="颜色">
-      <label>备注 2</label><input type="text" id="r2" placeholder="尺码">
-      <label>备注 3</label><input type="text" id="r3" placeholder="位置">
-      <div class="btns">
-        <button class="btn-del" onclick="delItem()">删除</button>
-        <button class="btn-cancel" onclick="closeModal()">取消</button>
-        <button class="btn-save" onclick="saveRemarks()">保存</button>
-      </div>
+<!-- 扫码成功浮层 -->
+<div class="scan-pop" id="scanPop">✓ 扫码成功</div>
+
+<!-- 备注弹窗 -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h3>编辑</h3><div class="sub" id="modalBc"></div>
+    <label>数量</label><input type="number" id="editQty" value="1" min="1" max="999">
+    <label>备注 1</label><input type="text" id="r1" placeholder="颜色">
+    <label>备注 2</label><input type="text" id="r2" placeholder="尺码">
+    <label>备注 3</label><input type="text" id="r3" placeholder="位置">
+    <div class="btns">
+      <button class="btn-del" onclick="delItem()">删除</button>
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-save" onclick="saveRemarks()">保存</button>
     </div>
   </div>
 </div>
 
+<!-- 导出预览弹窗 -->
+<div class="modal-bg" id="previewBg" onclick="if(event.target===this)closePreview()">
+  <div class="modal" style="max-width:500px">
+    <h3>导出预览</h3>
+    <div class="sub" id="previewInfo"></div>
+    <div class="preview-wrap" id="previewContent"></div>
+    <div class="btns">
+      <button class="btn-cancel" onclick="closePreview()">取消</button>
+      <button class="btn-save" onclick="doExport()">确认导出</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
 // ═══════ 密码 ═══════
-const PASS_HASH = 'e65463a5deed8ee331bf75d3c869082b18d9b3f527d8d04fbfa3c8bb1a3b9874'; // 密码: tuicang2026
+const PASS_HASH = 'e65463a5deed8ee331bf75d3c869082b18d9b3f527d8d04fbfa3c8bb1a3b9874';
 const SALT = 'scan2026';
 
-async function sha256(msg) {
-  const buf = new TextEncoder().encode(msg + SALT);
-  const hash = await crypto.subtle.digest('SHA-256', buf);
-  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+async function sha256(m){const b=new TextEncoder().encode(m+SALT);const h=await crypto.subtle.digest('SHA-256',b);return Array.from(new Uint8Array(h)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+async function login(){const h=await sha256(document.getElementById('pwInput').value);if(h===PASS_HASH){localStorage.setItem('_auth','1');document.getElementById('loginPage').style.display='none';document.getElementById('mainPage').style.display='block';init();}else{document.getElementById('loginErr').textContent='密码错误';}}
+function logout(){localStorage.removeItem('_auth');document.getElementById('loginPage').style.display='flex';document.getElementById('mainPage').style.display='none';stopScan();}
+if(localStorage.getItem('_auth')==='1'){document.getElementById('loginPage').style.display='none';document.getElementById('mainPage').style.display='block';}
+
+// ═══════ 数据库 ═══════
+const DB='ScanDB',ST='sessions';
+let db,currentFolder='default';
+function openDB(){return new Promise(r=>{const req=indexedDB.open(DB,1);req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains(ST))d.createObjectStore(ST,{keyPath:'name'});};req.onsuccess=e=>{db=e.target.result;r();};});}
+function dbGet(name){return new Promise(r=>{const tx=db.transaction(ST,'readonly');const req=tx.objectStore(ST).get(name);req.onsuccess=()=>r(req.result||{name,scans:[]});});}
+function dbPut(session){return new Promise(r=>{const tx=db.transaction(ST,'readwrite');tx.objectStore(ST).put(session);tx.oncomplete=()=>r();});}
+function dbDel(name){return new Promise(r=>{const tx=db.transaction(ST,'readwrite');tx.objectStore(ST).delete(name);tx.oncomplete=()=>r();});}
+function dbList(){return new Promise(r=>{const tx=db.transaction(ST,'readonly');const req=tx.objectStore(ST).getAll();req.onsuccess=()=>r(req.result.map(s=>({name:s.name,count:s.scans.length})));});}
+
+// ═══════ 文件夹 ═══════
+async function loadFolders(){
+  const list=await dbList();
+  const sel=document.getElementById('folderSelect');
+  sel.innerHTML=list.map(s=>`<option value="${escAttr(s.name)}">${escHtml(s.name)} (${s.count}条)</option>`).join('');
+  if(!list.find(s=>s.name===currentFolder)){currentFolder=list[0]?.name||'default';}
+  sel.value=currentFolder;
 }
-
-async function login() {
-  const pw = document.getElementById('pwInput').value;
-  const h = await sha256(pw);
-  if (h === PASS_HASH) {
-    localStorage.setItem('_auth', '1');
-    document.getElementById('loginPage').style.display = 'none';
-    document.getElementById('mainPage').style.display = 'block';
-    document.getElementById('pwInput').value = '';
-    render();
-  } else {
-    document.getElementById('loginErr').textContent = '密码错误';
-  }
-}
-
-function logout() {
-  localStorage.removeItem('_auth');
-  document.getElementById('loginPage').style.display = 'flex';
-  document.getElementById('mainPage').style.display = 'none';
-  stopScan();
-}
-
-// 自动登录
-if (localStorage.getItem('_auth') === '1') {
-  document.getElementById('loginPage').style.display = 'none';
-  document.getElementById('mainPage').style.display = 'block';
-}
-
-// ═══════ 数据 (IndexedDB) ═══════
-const DB_NAME = 'ScannerDB', STORE = 'scans';
-let db = null;
-
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = (e) => {
-      const d = e.target.result;
-      if (!d.objectStoreNames.contains(STORE)) {
-        d.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
-      }
-    };
-    req.onsuccess = (e) => { db = e.target.result; resolve(db); };
-    req.onerror = () => reject(req.error);
-  });
-}
-
-function dbOp(mode, callback) {
-  return new Promise((resolve, reject) => {
-    if (!db) { reject('db not open'); return; }
-    const tx = db.transaction(STORE, mode);
-    const store = tx.objectStore(STORE);
-    callback(store, resolve, reject, tx);
-  });
-}
-
-function getAll() {
-  return dbOp('readonly', (store, resolve) => {
-    const req = store.getAll();
-    req.onsuccess = () => resolve(req.result.reverse());
-  });
-}
-
-function addOne(bc) {
-  return dbOp('readwrite', (store, resolve) => {
-    const now = new Date();
-    const obj = {
-      barcode: bc,
-      time: now.toLocaleString('zh-CN', {hour:'2-digit',minute:'2-digit',second:'2-digit'}),
-      date: now.toISOString(),
-      r1:'', r2:'', r3:''
-    };
-    const req = store.add(obj);
-    req.onsuccess = () => resolve({id: req.result, ...obj});
-  });
-}
-
-function updateOne(id, r1, r2, r3) {
-  return dbOp('readwrite', (store, resolve) => {
-    const req = store.get(id);
-    req.onsuccess = () => {
-      const obj = req.result;
-      obj.r1 = r1; obj.r2 = r2; obj.r3 = r3;
-      store.put(obj);
-      resolve(obj);
-    };
-  });
-}
-
-function delOne(id) {
-  return dbOp('readwrite', (store, resolve) => store.delete(id).onsuccess=resolve);
-}
-
-function clearAllDB() {
-  return dbOp('readwrite', (store, resolve) => store.clear().onsuccess=resolve);
-}
-
-// ═══════ 渲染 ═══════
-let scans = [], editId = null;
-
-async function render() {
-  scans = await getAll();
-  document.getElementById('total').textContent = scans.length;
-  const list = document.getElementById('list');
-  if (!scans.length) {
-    list.innerHTML = '<div class="empty-state">暂无记录</div>';
-    return;
-  }
-  list.innerHTML = scans.map((s,i) => `
-    <div class="row" onclick="openModal(${i},${s.id})">
-      <div class="main">
-        <span class="n">${i+1}</span>
-        <span class="v">${esc(s.barcode)}</span>
-        <span class="t">${s.time}</span>
-      </div>
-      ${[s.r1,s.r2,s.r3].filter(Boolean).length
-        ? `<div class="tags">${[s.r1,s.r2,s.r3].filter(Boolean).map(t=>`<span class="filled">${esc(t)}</span>`).join('')}</div>`
-        : '<div class="tags"><span>点此写备注</span></div>'}
-    </div>`).join('');
-}
-
-function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-// ═══════ 扫码 ═══════
-let scanMode = 'both', scanner = null, scanning = false;
-
-function setMode(m) {
-  scanMode = m;
-  document.querySelectorAll('.mode-bar button').forEach(b=>b.classList.remove('active'));
-  document.getElementById('btn-'+m).classList.add('active');
-  if (scanning) { stopScan(); startScan(); }
-}
-
-function modeFmts() {
-  if (scanMode === 'barcode') return [
-    Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.CODE_39,
-    Html5QrcodeSupportedFormats.EAN_8, Html5QrcodeSupportedFormats.EAN_13,
-    Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E,
-    Html5QrcodeSupportedFormats.CODABAR, Html5QrcodeSupportedFormats.ITF,
-    Html5QrcodeSupportedFormats.PDF_417, Html5QrcodeSupportedFormats.AZTEC,
-    Html5QrcodeSupportedFormats.DATA_MATRIX, Html5QrcodeSupportedFormats.MAXICODE
-  ];
-  if (scanMode === 'qrcode') return [Html5QrcodeSupportedFormats.QR_CODE];
-  return undefined;
-}
-
-async function startScan() {
-  if (scanning) return;
-  if (!scanner) scanner = new Html5Qrcode("reader");
-  try {
-    await scanner.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: { width: 280, height: 180 }, formatsToSupport: modeFmts() },
-      async (text) => {
-        await addOne(text.trim());
-        await render();
-        toast('✓ ' + text);
-      },
-      () => {}
-    );
-    scanning = true;
-    document.getElementById('hint').textContent = '摄像头已开启';
-  } catch(e) {
-    toast('摄像头失败: ' + e.message);
-  }
-}
-
-async function stopScan() {
-  if (scanner && scanning) {
-    try { await scanner.stop(); } catch(e) {}
-    scanning = false;
-    document.getElementById('hint').textContent = '已停止';
-  }
-}
-
-// ═══════ 操作 ═══════
-async function manualAdd() {
-  const inp = document.getElementById('manualInput');
-  const v = inp.value.trim();
-  if (!v) return;
-  await addOne(v);
+async function switchFolder(){currentFolder=document.getElementById('folderSelect').value;await render();}
+async function newFolder(){
+  const name=prompt('新建文件夹名称：').trim();
+  if(!name)return;
+  if(name.length>30){toast('名称最长30个字符');return;}
+  await dbPut({name,scans:[]});
+  currentFolder=name;
+  await loadFolders();
   await render();
-  inp.value = ''; inp.focus();
-  toast('已添加');
+  toast('已创建：'+name);
 }
-
-function openModal(i, id) {
-  editId = id;
-  const s = scans[i];
-  document.getElementById('modalBc').textContent = '条码: ' + s.barcode;
-  document.getElementById('r1').value = s.r1 || '';
-  document.getElementById('r2').value = s.r2 || '';
-  document.getElementById('r3').value = s.r3 || '';
-  document.getElementById('modalBg').classList.add('show');
-}
-
-function closeModal() {
-  document.getElementById('modalBg').classList.remove('show');
-  editId = null;
-}
-
-async function saveRemarks() {
-  if (!editId) return;
-  const r1 = document.getElementById('r1').value.trim();
-  const r2 = document.getElementById('r2').value.trim();
-  const r3 = document.getElementById('r3').value.trim();
-  await updateOne(editId, r1, r2, r3);
+async function delFolder(){
+  const name=currentFolder;
+  if(name==='default'){toast('不能删除默认文件夹');return;}
+  if(!confirm(`删除文件夹「${name}」及其全部 ${scans.length} 条记录？`))return;
+  await dbDel(name);
+  currentFolder='default';
+  await loadFolders();
   await render();
-  closeModal();
-  toast('已保存');
-}
-
-async function delItem() {
-  if (!editId || !confirm('删除此条？')) return;
-  await delOne(editId);
-  await render();
-  closeModal();
   toast('已删除');
 }
 
-async function clearAll() {
-  if (!scans.length || !confirm(`确定删除全部 ${scans.length} 条？`)) return;
-  await clearAllDB();
+// ═══════ 数据 ═══════
+let scans=[],editId=null;
+async function render(){
+  const session=await dbGet(currentFolder);
+  scans=session.scans;
+  document.getElementById('total').textContent=scans.length+'条';
+  const list=document.getElementById('list');
+  if(!scans.length){list.innerHTML='<div class="empty-state">暂无记录</div>';return;}
+  list.innerHTML=scans.map((s,i)=>`
+    <div class="row" onclick="openModal(${i})">
+      <div class="main">
+        <span class="n">${i+1}</span>
+        <span class="v">${escHtml(s.bc)}</span>
+        <span class="q">×${s.qty||1}</span>
+        <span class="t">${s.time}</span>
+      </div>
+      ${[s.r1,s.r2,s.r3].filter(Boolean).length?`<div class="tags">${[s.r1,s.r2,s.r3].filter(Boolean).map(t=>`<span class="filled">${escHtml(t)}</span>`).join('')}</div>`:'<div class="tags"><span>点此备注</span></div>'}
+    </div>`).join('');
+}
+function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escAttr(s){return(s||'').replace(/"/g,'&quot;');}
+
+// ═══════ 扫码 ═══════
+let scanMode='both',scanner=null,scanning=false;
+
+function setMode(m){scanMode=m;document.querySelectorAll('.mode-bar button').forEach(b=>b.classList.remove('active'));document.getElementById('btn-'+m).classList.add('active');if(scanning){stopScan();startScan();}}
+function modeFmts(){if(scanMode==='barcode')return[Html5QrcodeSupportedFormats.CODE_128,Html5QrcodeSupportedFormats.CODE_39,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E,Html5QrcodeSupportedFormats.CODABAR,Html5QrcodeSupportedFormats.ITF,Html5QrcodeSupportedFormats.PDF_417,Html5QrcodeSupportedFormats.AZTEC,Html5QrcodeSupportedFormats.DATA_MATRIX,Html5QrcodeSupportedFormats.MAXICODE];if(scanMode==='qrcode')return[Html5QrcodeSupportedFormats.QR_CODE];return undefined;}
+
+async function startScan(){
+  if(scanning)return;if(!scanner)scanner=new Html5Qrcode("reader");
+  try{
+    await scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:280,height:180},formatsToSupport:modeFmts()},
+      async text=>{await addScan(text.trim());showScanPop();speak('扫码成功');},
+      ()=>{});
+    scanning=true;document.getElementById('hint').textContent='摄像头已开启';
+  }catch(e){toast('摄像头失败: '+e.message);}
+}
+async function stopScan(){if(scanner&&scanning){try{await scanner.stop();}catch(e){}scanning=false;document.getElementById('hint').textContent='已停止';}}
+
+// 扫码反馈
+function showScanPop(){const p=document.getElementById('scanPop');p.classList.add('show');clearTimeout(p._t);p._t=setTimeout(()=>p.classList.remove('show'),600);}
+function speak(text){try{const u=new SpeechSynthesisUtterance(text);u.lang='zh-CN';u.rate=1.1;speechSynthesis.speak(u);}catch(e){}}
+
+// ═══════ 操作 ═══════
+async function addScan(bc){
+  scans.push({bc,qty:1,r1:'',r2:'',r3:'',time:new Date().toLocaleString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})});
+  await dbPut({name:currentFolder,scans});
   await render();
-  toast('已清空');
+}
+async function manualAdd(){const v=document.getElementById('manualInput').value.trim();if(!v)return;await addScan(v);document.getElementById('manualInput').value='';document.getElementById('manualInput').focus();showScanPop();speak('扫码成功');}
+function openModal(i){editId=i;const s=scans[i];document.getElementById('modalBc').textContent='条码: '+s.bc;document.getElementById('editQty').value=s.qty||1;document.getElementById('r1').value=s.r1||'';document.getElementById('r2').value=s.r2||'';document.getElementById('r3').value=s.r3||'';document.getElementById('modalBg').classList.add('show');}
+function closeModal(){document.getElementById('modalBg').classList.remove('show');editId=null;}
+async function saveRemarks(){
+  if(editId==null)return;
+  scans[editId].qty=parseInt(document.getElementById('editQty').value)||1;
+  scans[editId].r1=document.getElementById('r1').value.trim();
+  scans[editId].r2=document.getElementById('r2').value.trim();
+  scans[editId].r3=document.getElementById('r3').value.trim();
+  await dbPut({name:currentFolder,scans});await render();closeModal();toast('已保存');
+}
+async function delItem(){if(editId==null||!confirm('删除？'))return;scans.splice(editId,1);await dbPut({name:currentFolder,scans});await render();closeModal();toast('已删除');}
+async function clearAll(){if(!scans.length||!confirm(`删除「${currentFolder}」全部 ${scans.length} 条？`))return;await dbPut({name:currentFolder,scans:[]});await render();toast('已清空');}
+
+// ═══════ 导出 ═══════
+function previewExport(){
+  if(!scans.length){toast('无数据');return;}
+  document.getElementById('previewInfo').textContent=`文件夹「${currentFolder}」共 ${scans.length} 条`;
+  let html='<table class="preview-table"><tr><th>扫码内容</th><th>数量</th><th>备注1</th><th>备注2</th><th>备注3</th><th>扫码时间</th></tr>';
+  scans.forEach(s=>{html+=`<tr><td>${escHtml(s.bc)}</td><td>${s.qty||1}</td><td>${escHtml(s.r1)}</td><td>${escHtml(s.r2)}</td><td>${escHtml(s.r3)}</td><td>${s.time}</td></tr>`;});
+  html+='</table>';
+  document.getElementById('previewContent').innerHTML=html;
+  document.getElementById('previewBg').classList.add('show');
+}
+function closePreview(){document.getElementById('previewBg').classList.remove('show');}
+function doExport(){
+  const d=new Date(),ds=`${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
+  const data=[['扫码内容','数量','备注1','备注2','备注3','扫码时间']];
+  scans.forEach(s=>data.push([s.bc,s.qty||1,s.r1,s.r2,s.r3,s.time]));
+  const ws=XLSX.utils.aoa_to_sheet(data);ws['!cols']=[{wch:28},{wch:8},{wch:14},{wch:14},{wch:14},{wch:16}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'扫码记录');
+  XLSX.writeFile(wb,`${currentFolder}_${ds}_${scans.length}条.xlsx`);
+  closePreview();toast('已导出');
 }
 
-function exportExcel() {
-  if (!scans.length) { toast('无数据'); return; }
-  const d = new Date();
-  const ds = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
-  const data = [['序号','条码','扫描时间','备注1','备注2','备注3']];
-  scans.forEach((s,i) => data.push([i+1, s.barcode, s.time, s.r1, s.r2, s.r3]));
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  ws['!cols'] = [{wch:6},{wch:28},{wch:14},{wch:14},{wch:14},{wch:14}];
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, '扫码记录');
-  XLSX.writeFile(wb, `退仓扫码_${ds}_${scans.length}条.xlsx`);
-  toast('已导出');
-}
-
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(t._t); t._t = setTimeout(()=>t.classList.remove('show'), 1800);
-}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1800);}
 
 // ═══════ 启动 ═══════
-openDB().then(() => render());
+async function init(){await openDB();await loadFolders();await render();}
+init();
 </script>
 </body>
 </html>
