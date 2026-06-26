@@ -292,7 +292,7 @@ async function startScan(){
   try{
     await scanner.start(
       {facingMode:"environment"},
-      {fps:10,qrbox:{width:280,height:180},disableFlip:false},
+      {fps:30},
       async text=>{
         const bc=text.trim();
         if(scanCooldown)return;
