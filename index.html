@@ -264,7 +264,7 @@ async function add(bc){
   scans.push({bc,qty:1,r1:'',r2:'',r3:'',time:new Date().toLocaleString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})});
   await dp({name:cf,scans});await rr();
 }
-async function manualAdd(){const v=document.getElementById('manualInput').value.trim();if(!v)return;if(!mf(v)){toast('已过滤');document.getElementById('manualInput').value='';return;}await add(v);document.getElementById('manualInput').value='';showPop(v);tts(v+' 扫码成功');}
+async function manualAdd(){const v=document.getElementById('manualInput').value.trim();if(!v)return;if(!mf(v)){toast('已过滤');document.getElementById('manualInput').value='';return;}await add(v);document.getElementById('manualInput').value='';showPop(v);tts('扫码成功');}
 
 // ═══════ Settings ═══════
 let cm='dup',gp=500,fm='any';
@@ -287,39 +287,102 @@ document.getElementById('filterBtns').addEventListener('click',function(e){if(e.
 function mf(bc){if(fm==='digit')return /^\d/.test(bc);if(fm==='letter')return /^[A-Za-z]/.test(bc);return true;}
 
 // ═══════ Camera ═══════
-let scanner=null,sg=false,co=false;
+let scanner=null,sg=false,co=false,camStream=null,animFrame=null;
+let nativeDetector=null; // BarcodeDetector API (硬件加速)
 function showPop(bc){const p=document.getElementById('scanPop');p.textContent='✓ '+bc;p.classList.add('show');clearTimeout(p._t);p._t=setTimeout(()=>p.classList.remove('show'),900);}
 function tts(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.rate=1;speechSynthesis.speak(u);}catch(e){}}
 function cooldown(){if(gp===0)return;co=true;setTimeout(()=>co=false,gp);}
 
+// 检测是否支持原生 BarcodeDetector
+function hasNative(){return typeof BarcodeDetector !== 'undefined';}
+
+function handleBarcode(bc){
+  if(co)return;
+  if(!mf(bc)){toast('已过滤');return;}
+  add(bc);showPop(bc);tts('扫码成功');cooldown();
+}
+
+async function scanWithNative(video){
+  if(!nativeDetector){
+    nativeDetector=new BarcodeDetector({formats:['code_128','code_39','ean_13','ean_8','upc_a','upc_e','codabar','itf','qr_code','data_matrix','pdf_417','aztec']});
+  }
+  async function tick(){
+    if(!sg)return;
+    animFrame=requestAnimationFrame(tick);
+    if(co)return;
+    try{
+      const barcodes=await nativeDetector.detect(video);
+      for(const b of barcodes){handleBarcode(b.rawValue);}
+    }catch(e){}
+  }
+  animFrame=requestAnimationFrame(tick);
+}
+
 async function startScan(){
   if(sg)return;
-  // 预激活语音
   const u=new SpeechSynthesisUtterance('');u.volume=0;speechSynthesis.speak(u);
   document.getElementById('btnStart').style.display='none';
   document.getElementById('btnStop').style.display='inline-block';
   document.getElementById('camHint').textContent='摄像头开启中…';
-  scanner=new Html5Qrcode("reader");
+
   try{
-    await scanner.start({facingMode:"environment"},{fps:30},
-      text=>{const bc=text.trim();if(co)return;if(!mf(bc)){toast('已过滤');return;}add(bc);showPop(bc);tts(bc+' 扫码成功');cooldown();},
-      ()=>{});
-    sg=true;
-    document.getElementById('camHint').textContent='对准条码';
+    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+    // 创建隐藏 video 给 html5-qrcode reader
+    // 如果支持原生就先走原生
+    if(hasNative()){
+      // 原生 BarcodeDetector: 用我们自己管理的 video 流
+      // html5-qrcode 的 reader div 需要 video，我们改用它内部 video
+      scanner=new Html5Qrcode("reader");
+      // 直接启动但用我们的流做原生检测
+      // 先让 html5-qrcode 接管 camera，同时跑原生检测
+      // 实际上更简单: 直接不用 html5-qrcode，纯原生
+      // 但 html5-qrcode 没有提供直接访问内部 video 的方式
+      // 所以我们用一个变通: 使用 html5-qrcode 启动相机，在回调里已经解码过了
+      // 原生方案: 用我们自己创建的 video
+      const video=document.createElement('video');
+      video.setAttribute('playsinline','');
+      video.srcObject=camStream;
+      video.play();
+      // 把 video 插入 reader
+      const reader=document.getElementById('reader');
+      reader.innerHTML='';
+      reader.appendChild(video);
+      video.style.width='100%';
+      video.style.height='100%';
+      video.style.objectFit='cover';
+      sg=true;
+      document.getElementById('camHint').textContent='原生引擎·对准条码';
+      scanWithNative(video);
+    }else{
+      // 回退 html5-qrcode
+      // 先用我们的流 track 停止，让 html5-qrcode 自己获取
+      camStream.getTracks().forEach(t=>t.stop());
+      camStream=null;
+      scanner=new Html5Qrcode("reader");
+      await scanner.start({facingMode:"environment"},{fps:30},
+        text=>{handleBarcode(text.trim());},
+        ()=>{});
+      sg=true;
+      document.getElementById('camHint').textContent='对准条码';
+    }
   }catch(e){
     document.getElementById('camHint').textContent='错误: '+e.message;
-    toast('摄像头错误');sg=false;if(scanner){try{scanner.stop();}catch(e){}}scanner=null;
-    document.getElementById('btnStart').style.display='inline-block';
-    document.getElementById('btnStop').style.display='none';
+    toast('摄像头错误');
+    stopScan();
   }
 }
 
 async function stopScan(){
-  if(scanner){try{await scanner.stop();}catch(e){}scanner.clear();scanner=null;}
   sg=false;
+  if(animFrame){cancelAnimationFrame(animFrame);animFrame=null;}
+  if(scanner){try{await scanner.stop();}catch(e){}scanner.clear();scanner=null;}
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  nativeDetector=null;
   document.getElementById('btnStart').style.display='inline-block';
   document.getElementById('btnStop').style.display='none';
   document.getElementById('camHint').textContent='就绪';
+  // 恢复 reader div
+  document.getElementById('reader').innerHTML='';
 }
 
 // ═══════ Edit ═══════
