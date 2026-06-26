@@ -10,7 +10,8 @@
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;user-select:none}
+body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;user-select:none;-webkit-user-select:none}
+/* Login */
 .login-page{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#1a1a2e,#16213e);display:flex;justify-content:center;align-items:center;z-index:9999}
 .login-card{background:#fff;border-radius:16px;padding:36px 28px;width:90%;max-width:360px;text-align:center}
 .login-card h1{font-size:22px;margin-bottom:16px}
@@ -18,73 +19,99 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
 .login-card input:focus{border-color:#4472C4}
 .login-card button{width:100%;padding:13px;background:#4472C4;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer}
 .login-err{color:#C00000;font-size:13px;margin-top:8px;min-height:20px}
+/* Home */
 .home-page{display:none;min-height:100vh;background:linear-gradient(135deg,#1a1a2e,#16213e);flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:30px}
 .home-page .logo{color:#fff;font-size:42px;font-weight:bold;margin-bottom:8px}
 .home-page .sub{color:rgba(255,255,255,.6);font-size:15px;margin-bottom:50px}
 .home-page .enter-btn{background:#4472C4;color:#fff;border:none;border-radius:14px;padding:18px 60px;font-size:20px;font-weight:bold;cursor:pointer;box-shadow:0 8px 30px rgba(68,114,196,.4)}
 .home-page .enter-btn:active{opacity:.8}
 .home-page .logout-link{color:rgba(255,255,255,.4);font-size:13px;margin-top:40px;cursor:pointer}
-.main-page{display:none}
-.top{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;padding:8px 12px;display:flex;align-items:center;gap:6px;position:sticky;top:0;z-index:99}
+/* Main page */
+.main-page{display:none;flex-direction:column;height:100vh;overflow:hidden}
+/* Top bar */
+.top{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;padding:8px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0}
 .top h1{font-size:14px;flex:1}
-.top .info{font-size:10px;opacity:.7}
-.top .btn-back{background:none;border:1px solid rgba(255,255,255,.4);color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;cursor:pointer}
-.folder-bar{display:flex;gap:5px;padding:10px;max-width:500px;margin:0 auto}
-.folder-bar select{flex:1;padding:9px;border:2px solid #ddd;border-radius:8px;font-size:13px;background:#fff;outline:none}
-.folder-bar button{padding:9px 10px;border:none;border-radius:8px;font-size:12px;font-weight:bold;cursor:pointer;white-space:nowrap}
-.btn-new{background:#548235;color:#fff}
-.btn-del-folder{background:#C00000;color:#fff}
-.section-label{text-align:center;font-size:11px;color:#999;padding:6px 10px 2px;max-width:500px;margin:0 auto}
-.toggle-row{display:flex;gap:5px;padding:4px 10px;max-width:500px;margin:0 auto}
-.toggle-row button{flex:1;padding:8px 4px;border:2px solid #ddd;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer;background:#fff;color:#666}
-.toggle-row button.active{border-color:#4472C4;background:#e8f0fe;color:#4472C4}
-.manual-bar{display:flex;gap:5px;padding:6px 10px;max-width:500px;margin:0 auto}
-.manual-bar input{flex:1;padding:9px;border:2px solid #ddd;border-radius:8px;font-size:13px;font-family:Consolas,monospace;outline:none}
-.manual-bar input:focus{border-color:#4472C4}
-.manual-bar button{padding:9px 12px;background:#4472C4;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:bold;cursor:pointer}
-.act-bar{display:flex;gap:4px;padding:6px 10px;max-width:500px;margin:0 auto}
-.act-bar button{flex:1;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:bold;cursor:pointer}
-.b-start{background:#548235;color:#fff}
-.b-stop{background:#999;color:#fff;display:none}
-.b-clear{background:#ED7D31;color:#fff}
-.b-export{background:#4472C4;color:#fff}
-#list{max-width:500px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);padding-bottom:20px}
-.row{padding:7px 10px;border-bottom:1px solid #f3f3f3;cursor:pointer}
-.row:active{background:#e8f0fe}
-.row .main{display:flex;align-items:center;font-size:12px}
-.row .n{color:#999;font-size:10px;min-width:22px}
-.row .v{font-family:Consolas,monospace;flex:1;margin:0 5px;color:#333;font-size:13px;word-break:break-all}
-.row .q{color:#548235;font-weight:bold;margin-right:6px;font-size:11px}
-.row .t{font-size:10px;color:#aaa;white-space:nowrap}
-.row .tags{display:flex;gap:3px;margin-top:2px;margin-left:22px;flex-wrap:wrap}
-.row .tags span{font-size:10px;padding:1px 6px;border-radius:10px;background:#f0f0f0;color:#666}
-.row .tags span.filled{background:#e8f0fe;color:#4472C4}
-.empty-state{padding:50px;text-align:center;color:#bbb}
-.scan-pop{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);background:#548235;color:#fff;padding:16px 32px;border-radius:14px;font-size:17px;font-weight:bold;z-index:180;pointer-events:none;opacity:0;transition:opacity .15s}
+.top .info{font-size:11px;opacity:.7}
+.top button{background:none;border:1px solid rgba(255,255,255,.4);color:#fff;padding:5px 10px;border-radius:5px;font-size:11px;cursor:pointer;white-space:nowrap}
+.top button.danger{background:#C00000;border-color:#C00000}
+/* Camera area - fixed top 1/3 */
+.camera-zone{flex-shrink:0;background:#000;position:relative}
+.camera-zone #reader{width:100%;height:100%}
+.camera-zone .overlay{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);color:#fff;font-size:12px;background:rgba(0,0,0,.6);padding:4px 12px;border-radius:10px;pointer-events:none}
+/* Toolbar */
+.toolbar{display:flex;gap:6px;padding:6px 10px;flex-shrink:0;background:#fff;border-bottom:1px solid #eee;align-items:center}
+.toolbar .folder-select{flex:1;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:12px;outline:none;background:#fff}
+.toolbar button{padding:7px 10px;border:none;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer;white-space:nowrap}
+.btn-folder{background:#548235;color:#fff}
+.btn-start{background:#548235;color:#fff}
+.btn-stop{background:#C00000;color:#fff;display:none}
+.btn-manual{background:#4472C4;color:#fff}
+.btn-export{background:#4472C4;color:#fff}
+.btn-clear{background:#ED7D31;color:#fff}
+.btn-settings{background:none;border:none;font-size:22px;cursor:pointer;padding:4px;color:#666}
+/* Manual input row */
+.manual-row{display:flex;gap:5px;padding:4px 10px;flex-shrink:0;background:#fff}
+.manual-row input{flex:1;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:Consolas,monospace;outline:none}
+.manual-row input:focus{border-color:#4472C4}
+.manual-row button{padding:8px 12px;background:#4472C4;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer}
+/* List - scrollable */
+.list-wrap{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#fff}
+.list-item{display:flex;align-items:center;padding:8px 12px;border-bottom:1px solid #f2f2f2;cursor:pointer;font-size:13px;gap:8px}
+.list-item:nth-child(even){background:#fafafa}
+.list-item:active{background:#e8f0fe}
+.list-item .num{color:#999;font-size:11px;min-width:28px;text-align:right}
+.list-item .code{font-family:Consolas,monospace;flex:1;color:#333;font-size:13px;word-break:break-all}
+.list-item .qty-tag{background:#548235;color:#fff;font-size:10px;padding:1px 6px;border-radius:8px;font-weight:bold;min-width:28px;text-align:center}
+.list-item .time{font-size:10px;color:#bbb;white-space:nowrap}
+.list-item .tags-inline{display:flex;gap:2px}
+.list-item .tags-inline span{font-size:9px;padding:1px 5px;border-radius:6px;background:#e8f0fe;color:#4472C4;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.empty{text-align:center;color:#bbb;padding:60px 20px;font-size:14px}
+/* Settings modal */
+.settings-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200;display:none;justify-content:center;align-items:center}
+.settings-bg.show{display:flex}
+.settings-box{background:#fff;border-radius:14px;padding:20px;width:90%;max-width:380px}
+.settings-box h3{font-size:17px;margin-bottom:16px;text-align:center}
+.settings-box .set-group{margin-bottom:14px}
+.settings-box .set-label{font-size:12px;color:#999;margin-bottom:4px}
+.settings-box .set-row{display:flex;gap:4px}
+.settings-box .set-row button{flex:1;padding:8px 4px;border:2px solid #ddd;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer;background:#fff;color:#666}
+.settings-box .set-row button.sel{border-color:#4472C4;background:#e8f0fe;color:#4472C4}
+.settings-box .btn-close{width:100%;padding:12px;background:#4472C4;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;margin-top:8px}
+/* Item edit modal */
+.edit-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:150;display:none;justify-content:center;align-items:center}
+.edit-bg.show{display:flex}
+.edit-box{background:#fff;border-radius:14px;padding:18px;width:90%;max-width:380px;max-height:85vh;overflow-y:auto}
+.edit-box h3{font-size:15px;margin-bottom:2px}
+.edit-box .sub{font-size:12px;color:#999;margin-bottom:10px;word-break:break-all}
+.edit-box label{display:block;font-size:12px;color:#666;margin-top:6px;margin-bottom:2px}
+.edit-box input{width:100%;padding:8px;border:1px solid #ddd;border-radius:7px;font-size:14px;outline:none}
+.edit-box input:focus{border-color:#4472C4}
+.edit-box .btns{display:flex;gap:6px;margin-top:12px}
+.edit-box .btns button{flex:1;padding:10px;border:none;border-radius:7px;font-size:14px;font-weight:bold;cursor:pointer}
+.edit-save{background:#4472C4;color:#fff}
+.edit-cancel{background:#eee;color:#666}
+.edit-del{background:#C00000;color:#fff;flex:0.5!important}
+/* Export preview */
+.preview-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:150;display:none;justify-content:center;align-items:center}
+.preview-bg.show{display:flex}
+.preview-box{background:#fff;border-radius:14px;padding:18px;width:90%;max-width:500px;max-height:85vh;overflow-y:auto}
+.preview-box h3{font-size:16px;margin-bottom:2px}
+.preview-box .sub{font-size:12px;color:#999;margin-bottom:8px}
+.preview-box table{width:100%;border-collapse:collapse;font-size:11px}
+.preview-box th{background:#4472C4;color:#fff;padding:5px;text-align:center;position:sticky;top:0}
+.preview-box td{padding:4px;text-align:center;border-bottom:1px solid #eee;font-family:Consolas,monospace;font-size:10px}
+.preview-box .btns{display:flex;gap:6px;margin-top:12px}
+.preview-box .btns button{flex:1;padding:10px;border:none;border-radius:7px;font-size:14px;font-weight:bold;cursor:pointer}
+/* Pop & toast */
+.scan-pop{position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);background:#548235;color:#fff;padding:14px 28px;border-radius:12px;font-size:16px;font-weight:bold;z-index:180;pointer-events:none;opacity:0;transition:opacity .15s}
 .scan-pop.show{opacity:1}
-.modal-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:150;display:none;justify-content:center;align-items:center}
-.modal-bg.show{display:flex}
-.modal{background:#fff;border-radius:14px;padding:18px;width:90%;max-width:400px;max-height:85vh;overflow-y:auto}
-.modal h3{font-size:16px;margin-bottom:3px}
-.modal .sub{font-size:12px;color:#999;margin-bottom:10px;word-break:break-all}
-.modal label{display:block;font-size:12px;color:#666;margin-top:7px;margin-bottom:2px}
-.modal input{width:100%;padding:8px;border:1px solid #ddd;border-radius:7px;font-size:14px;outline:none}
-.modal input:focus{border-color:#4472C4}
-.modal .btns{display:flex;gap:6px;margin-top:12px}
-.modal .btns button{flex:1;padding:10px;border:none;border-radius:7px;font-size:14px;font-weight:bold;cursor:pointer}
-.btn-save{background:#4472C4;color:#fff}
-.btn-cancel{background:#eee;color:#666}
-.btn-del{background:#C00000;color:#fff;flex:0.5!important}
-.preview-table{width:100%;border-collapse:collapse;font-size:11px;margin:8px 0}
-.preview-table th{background:#4472C4;color:#fff;padding:5px 6px;text-align:center}
-.preview-table td{padding:4px 6px;text-align:center;border-bottom:1px solid #eee;font-family:Consolas,monospace;font-size:11px}
-.preview-wrap{max-height:45vh;overflow-y:auto;border:1px solid #ddd;border-radius:8px}
-.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;padding:12px 28px;border-radius:20px;font-size:15px;z-index:200;pointer-events:none;opacity:0;transition:opacity .2s}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;padding:10px 24px;border-radius:16px;font-size:14px;z-index:200;pointer-events:none;opacity:0;transition:opacity .2s}
 .toast.show{opacity:1}
 </style>
 </head>
 <body>
 
+<!-- Login -->
 <div class="login-page" id="loginPage">
   <div class="login-card">
     <h1>David扫码</h1>
@@ -94,6 +121,7 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
   </div>
 </div>
 
+<!-- Home -->
 <div class="home-page" id="homePage">
   <div class="logo">David扫码</div>
   <div class="sub">批量扫码采集 · 一键导出Excel</div>
@@ -101,186 +129,213 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
   <div class="logout-link" onclick="logout()">退出登录</div>
 </div>
 
+<!-- Main -->
 <div class="main-page" id="mainPage">
   <div class="top">
-    <button class="btn-back" onclick="backHome()">← 首页</button>
+    <button onclick="backHome()">← 首页</button>
     <h1>David扫码</h1>
     <span class="info" id="total">0条</span>
-    <button class="btn-back" onclick="logout()">退出</button>
+    <button class="danger" onclick="ca()">清空</button>
+    <button onclick="pe()">导出</button>
+    <button onclick="logout()">退出</button>
   </div>
-
-  <div class="section-label">文件夹</div>
-  <div class="folder-bar">
-    <select id="folderSelect" onchange="switchFolder()"></select>
-    <button class="btn-new" onclick="newFolder()">+新建</button>
-    <button class="btn-del-folder" onclick="delFolder()">删</button>
+  <!-- Camera -->
+  <div class="camera-zone" id="cameraZone"><div id="reader"></div><div class="overlay" id="camHint">就绪</div></div>
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <select class="folder-select" id="folderSelect" onchange="sf()"></select>
+    <button class="btn-folder" onclick="nf()">+文件夹</button>
+    <button onclick="df()" style="background:none;border:1px solid #ddd;font-size:11px;padding:7px 8px">删</button>
+    <button class="btn-settings" onclick="openSettings()">⚙</button>
+    <button class="btn-start" id="btnStart" onclick="startScan()">开始</button>
+    <button class="btn-stop" id="btnStop" onclick="stopScan()">停止</button>
   </div>
-
-  <div class="section-label">计数模式</div>
-  <div class="toggle-row">
-    <button id="btn-dup" class="active" onclick="setCountMode('dup')">重复保留 · 逐行记录</button>
-    <button id="btn-count" onclick="setCountMode('count')">自动计数 · 叠加数量</button>
-  </div>
-
-  <div class="section-label">扫码间隔</div>
-  <div class="toggle-row">
-    <button id="btn-gap0" onclick="setGap(0)">无间隔</button>
-    <button id="btn-gap500" class="active" onclick="setGap(500)">0.5秒</button>
-    <button id="btn-gap1000" onclick="setGap(1000)">1秒</button>
-    <button id="btn-gap1500" onclick="setGap(1500)">1.5秒</button>
-    <button id="btn-gap2000" onclick="setGap(2000)">2秒</button>
-  </div>
-
-  <div class="section-label">条码过滤</div>
-  <div class="toggle-row">
-    <button id="btn-any" class="active" onclick="setFilter('any')">任意条码</button>
-    <button id="btn-digit" onclick="setFilter('digit')">仅数字开头</button>
-    <button id="btn-letter" onclick="setFilter('letter')">仅字母开头</button>
-  </div>
-
-  <div class="act-bar">
-    <button class="b-start" id="btnStartScan" onclick="startScan()">开始扫码</button>
-    <button class="b-stop" id="btnStopScan" onclick="stopScan()">停止扫码</button>
-  </div>
-
-  <div id="reader" style="width:100%;max-width:500px;margin:0 auto"></div>
-  <div class="manual-bar">
-    <input type="text" id="manualInput" placeholder="手动输入条码">
+  <!-- Manual input -->
+  <div class="manual-row">
+    <input type="text" id="manualInput" placeholder="手动输入条码，回车添加">
     <button onclick="manualAdd()">添加</button>
   </div>
-
-  <div class="act-bar">
-    <button class="b-clear" onclick="clearAll()">清空</button>
-    <button class="b-export" onclick="previewExport()">导出Excel</button>
-  </div>
-
-  <div class="section-label" id="hint">就绪，点「开始扫码」</div>
-  <div id="list"><div class="empty-state">暂无记录</div></div>
+  <!-- List -->
+  <div class="list-wrap" id="listWrap"><div class="empty">暂无记录</div></div>
 </div>
 
-<div class="scan-pop" id="scanPop"></div>
+<!-- Settings -->
+<div class="settings-bg" id="settingsBg" onclick="if(event.target===this)closeSettings()">
+  <div class="settings-box">
+    <h3>⚙ 设置</h3>
+    <div class="set-group">
+      <div class="set-label">计数模式</div>
+      <div class="set-row" id="countBtns">
+        <button class="sel" data-v="dup">重复保留·逐行记录</button>
+        <button data-v="count">自动计数·叠加数量</button>
+      </div>
+    </div>
+    <div class="set-group">
+      <div class="set-label">扫码间隔</div>
+      <div class="set-row" id="gapBtns">
+        <button data-v="0">无间隔</button>
+        <button class="sel" data-v="500">0.5秒</button>
+        <button data-v="1000">1秒</button>
+        <button data-v="1500">1.5秒</button>
+        <button data-v="2000">2秒</button>
+      </div>
+    </div>
+    <div class="set-group">
+      <div class="set-label">条码过滤</div>
+      <div class="set-row" id="filterBtns">
+        <button class="sel" data-v="any">任意</button>
+        <button data-v="digit">数字开头</button>
+        <button data-v="letter">字母开头</button>
+      </div>
+    </div>
+    <button class="btn-close" onclick="closeSettings()">完成</button>
+  </div>
+</div>
 
-<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <h3>编辑</h3><div class="sub" id="modalBc"></div>
+<!-- Edit modal -->
+<div class="edit-bg" id="editBg" onclick="if(event.target===this)closeEdit()">
+  <div class="edit-box">
+    <h3>编辑</h3><div class="sub" id="editBc"></div>
     <label>数量</label><input type="number" id="editQty" value="1" min="1" max="9999">
     <label>备注 1</label><input type="text" id="r1" placeholder="颜色">
     <label>备注 2</label><input type="text" id="r2" placeholder="尺码">
     <label>备注 3</label><input type="text" id="r3" placeholder="位置">
     <div class="btns">
-      <button class="btn-del" onclick="delItem()">删除</button>
-      <button class="btn-cancel" onclick="closeModal()">取消</button>
-      <button class="btn-save" onclick="saveRemarks()">保存</button>
+      <button class="edit-del" onclick="di()">删除</button>
+      <button class="edit-cancel" onclick="closeEdit()">取消</button>
+      <button class="edit-save" onclick="sv()">保存</button>
     </div>
   </div>
 </div>
 
-<div class="modal-bg" id="previewBg" onclick="if(event.target===this)closePreview()">
-  <div class="modal" style="max-width:500px">
+<!-- Export preview -->
+<div class="preview-bg" id="previewBg" onclick="if(event.target===this)closePreview()">
+  <div class="preview-box">
     <h3>导出预览</h3><div class="sub" id="previewInfo"></div>
-    <div class="preview-wrap" id="previewContent"></div>
+    <div style="max-height:45vh;overflow-y:auto" id="previewTable"></div>
     <div class="btns">
-      <button class="btn-cancel" onclick="closePreview()">取消</button>
-      <button class="btn-save" onclick="doExport()">确认导出</button>
+      <button class="edit-cancel" onclick="closePreview()">取消</button>
+      <button class="edit-save" onclick="doExport()">确认导出</button>
     </div>
   </div>
 </div>
+
+<div class="scan-pop" id="scanPop"></div>
 <div class="toast" id="toast"></div>
 
 <script>
 // ═══════ 密码 ═══════
-const PH='e65463a5deed8ee331bf75d3c869082b18d9b3f527d8d04fbfa3c8bb1a3b9874',S='scan2026';
-async function sha256(m){const b=new TextEncoder().encode(m+S);const h=await crypto.subtle.digest('SHA-256',b);return Array.from(new Uint8Array(h)).map(x=>x.toString(16).padStart(2,'0')).join('');}
-async function login(){const h=await sha256(document.getElementById('pwInput').value);if(h===PH){document.getElementById('loginPage').style.display='none';document.getElementById('homePage').style.display='flex';}else{document.getElementById('loginErr').textContent='密码错误';}}
-function logout(){stopScan();document.getElementById('mainPage').style.display='none';document.getElementById('homePage').style.display='none';document.getElementById('loginPage').style.display='flex';localStorage.removeItem('_auth');}
-function enterScan(){document.getElementById('homePage').style.display='none';document.getElementById('mainPage').style.display='block';init();}
+const PH='e65463a5deed8ee331bf75d3c869082b18d9b3f527d8d04fbfa3c8bb1a3b9874',SALT='scan2026';
+const MAX=5000;
+async function sha256(m){const b=new TextEncoder().encode(m+SALT);const h=await crypto.subtle.digest('SHA-256',b);return Array.from(new Uint8Array(h)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+async function login(){if(await sha256(document.getElementById('pwInput').value)===PH){document.getElementById('loginPage').style.display='none';document.getElementById('homePage').style.display='flex';localStorage.setItem('_auth','1');}else{document.getElementById('loginErr').textContent='密码错误';}}
+function logout(){stopScan();document.getElementById('loginPage').style.display='flex';document.getElementById('homePage').style.display='none';document.getElementById('mainPage').style.display='none';localStorage.removeItem('_auth');}
+function enterScan(){document.getElementById('homePage').style.display='none';document.getElementById('mainPage').style.display='flex';setCameraHeight();init();}
 function backHome(){stopScan();document.getElementById('mainPage').style.display='none';document.getElementById('homePage').style.display='flex';}
 if(localStorage.getItem('_auth')==='1'){document.getElementById('loginPage').style.display='none';document.getElementById('homePage').style.display='flex';}
 
+function setCameraHeight(){
+  const h=Math.floor(window.innerHeight/3);
+  document.getElementById('cameraZone').style.height=h+'px';
+}
+window.addEventListener('resize',setCameraHeight);
+
 // ═══════ DB ═══════
-const DB='SDB3',ST='s';let db,cf='default';
+const DB='SDB4',ST='s';let db,cf='default';
 function odb(){return new Promise(r=>{const q=indexedDB.open(DB,1);q.onupgradeneeded=e=>{if(!e.target.result.objectStoreNames.contains(ST))e.target.result.createObjectStore(ST,{keyPath:'name'});};q.onsuccess=e=>{db=e.target.result;r();};});}
-function dg(n){return new Promise(r=>{const t=db.transaction(ST,'ro'),q=t.objectStore(ST).get(n);q.onsuccess=()=>r(q.result||{name:n,scans:[]});});}
+function dg(n){return new Promise(r=>{const t=db.transaction(ST,'ro');const q=t.objectStore(ST).get(n);q.onsuccess=()=>r(q.result||{name:n,scans:[]});});}
 function dp(s){return new Promise(r=>{const t=db.transaction(ST,'rw');t.objectStore(ST).put(s);t.oncomplete=()=>r();});}
 function dd(n){return new Promise(r=>{const t=db.transaction(ST,'rw');t.objectStore(ST).delete(n);t.oncomplete=()=>r();});}
-function dl(){return new Promise(r=>{const t=db.transaction(ST,'ro'),q=t.objectStore(ST).getAll();q.onsuccess=()=>r(q.result.map(s=>({name:s.name,count:s.scans.length})));});}
+function dl(){return new Promise(r=>{const t=db.transaction(ST,'ro');const q=t.objectStore(ST).getAll();q.onsuccess=()=>r(q.result.map(s=>({name:s.name,count:s.scans.length})));});}
 
-async function lf(){const l=await dl();const s=document.getElementById('folderSelect');s.innerHTML=l.map(x=>`<option value="${ea(x.name)}">${eh(x.name)} (${x.count}条)</option>`).join('');if(!l.find(x=>x.name===cf))cf=l[0]?.name||'default';s.value=cf;}
+// ═══════ Folder ═══════
+async function lf(){const l=await dl();const s=document.getElementById('folderSelect');s.innerHTML=l.map(x=>`<option value="${x.name}">${x.name} (${x.count})</option>`).join('');if(!l.find(x=>x.name===cf))cf=l[0]?.name||'default';s.value=cf;}
 async function sf(){cf=document.getElementById('folderSelect').value;await rr();}
-async function nf(){const n=prompt('新建文件夹：').trim();if(!n)return;if(n.length>30){toast('最多30字符');return;}await dp({name:n,scans:[]});cf=n;await lf();await rr();toast('已创建：'+n);}
-async function df(){if(cf==='default'){toast('不能删默认');return;}if(!confirm('删除「'+cf+'」？'))return;await dd(cf);cf='default';await lf();await rr();toast('已删除');}
+async function nf(){const n=prompt('文件夹名：','').trim();if(!n)return;if(n.length>30){toast('最多30字符');return;}await dp({name:n,scans:[]});cf=n;await lf();await rr();toast('已创建');}
+async function df(){if(cf==='default'){toast('不能删默认');return;}if(!confirm('删除文件夹「'+cf+'」？'))return;await dd(cf);cf='default';await lf();await rr();toast('已删除');}
 
+// ═══════ Scan data ═══════
 let scans=[],ei=null;
-async function rr(){const s=await dg(cf);scans=s.scans;document.getElementById('total').textContent=scans.length+'条';const l=document.getElementById('list');if(!scans.length){l.innerHTML='<div class="empty-state">暂无记录</div>';return;}l.innerHTML=scans.map((s,i)=>'<div class="row" onclick="om('+i+')"><div class="main"><span class="n">'+(i+1)+'</span><span class="v">'+eh(s.bc)+'</span><span class="q">×'+(s.qty||1)+'</span><span class="t">'+s.time+'</span></div>'+(['r1','r2','r3'].some(k=>s[k])?'<div class="tags">'+['r1','r2','r3'].filter(k=>s[k]).map(k=>'<span class="filled">'+eh(s[k])+'</span>').join('')+'</div>':'<div class="tags"><span>点此备注</span></div>')+'</div>').join('');}
-function eh(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function ea(s){return(s||'').replace(/"/g,'&quot;');}
+async function rr(){const s=await dg(cf);scans=s.scans;document.getElementById('total').textContent=scans.length+'条';const lw=document.getElementById('listWrap');if(!scans.length){lw.innerHTML='<div class="empty">暂无记录</div>';return;}let h='';scans.forEach((s,i)=>{const tags=['r1','r2','r3'].filter(k=>s[k]);h+=`<div class="list-item" onclick="openEdit(${i})"><span class="num">${i+1}</span><span class="code">${esc(s.bc)}</span><span class="qty-tag">×${s.qty||1}</span>${tags.length?`<span class="tags-inline">${tags.map(k=>`<span>${esc(s[k])}</span>`).join('')}</span>`:''}<span class="time">${s.time}</span></div>`;});lw.innerHTML=h;}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-// ═══════ 扫码 ═══════
-let sc=null,sg=false,fm='any',cm='dup',gp=500,co=false,lb='';
-
-function setFilter(m){if(fm===m){m='any';}fm=m;['btn-any','btn-digit','btn-letter'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById('btn-'+m).classList.add('active');}
-function setCountMode(m){cm=m;['btn-dup','btn-count'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById('btn-'+m).classList.add('active');}
-function setGap(ms){gp=ms;['btn-gap0','btn-gap500','btn-gap1000','btn-gap1500','btn-gap2000'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById('btn-gap'+(ms||0)).classList.add('active');}
-function mf(bc){if(fm==='digit')return /^\d/.test(bc);if(fm==='letter')return /^[A-Za-z]/.test(bc);return true;}
-
-function showPop(bc){const p=document.getElementById('scanPop');p.textContent='✓ '+bc;p.classList.add('show');clearTimeout(p._t);p._t=setTimeout(()=>p.classList.remove('show'),900);}
-function tts(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.rate=1;speechSynthesis.speak(u);}catch(e){}}
-function iVoice(){const u=new SpeechSynthesisUtterance('');u.volume=0;speechSynthesis.speak(u);}
-function scooldown(){if(gp===0)return;co=true;setTimeout(()=>co=false,gp);}
-
-async function startScan(){
-  if(sg)return;
-  iVoice();
-  document.getElementById('btnStartScan').style.display='none';
-  document.getElementById('btnStopScan').style.display='block';
-  document.getElementById('hint').textContent='摄像头开启中…';
-  sc=new Html5Qrcode("reader");
-  try{
-    await sc.start(
-      {facingMode:"environment"},
-      {fps:30},
-      (text)=>{
-        const bc=text.trim();
-        if(co)return;
-        if(!mf(bc)){toast('已过滤');return;}
-        add(bc);showPop(bc);tts(bc+' 扫码成功');scooldown();
-      },
-      ()=>{});
-    sg=true;
-    document.getElementById('hint').textContent='摄像头已开启，对准条码…';
-  }catch(e){
-    document.getElementById('hint').textContent='错误: '+e.message;
-    toast('摄像头错误');sg=false;sc=null;
-    document.getElementById('btnStartScan').style.display='block';
-    document.getElementById('btnStopScan').style.display='none';
-  }
-}
-
-async function stopScan(){
-  if(sc){try{await sc.stop();}catch(e){}sc.clear();sc=null;}
-  sg=false;
-  document.getElementById('btnStartScan').style.display='block';
-  document.getElementById('btnStopScan').style.display='none';
-  document.getElementById('hint').textContent='就绪，点「开始扫码」';
-}
-
-// ═══════ 操作 ═══════
+// ═══════ Add ═══════
 async function add(bc){
+  if(scans.length>=MAX){toast('已达上限5000条');return;}
   if(cm==='count'){const ex=scans.find(s=>s.bc===bc);if(ex){ex.qty=(ex.qty||1)+1;await dp({name:cf,scans});await rr();return;}}
   scans.push({bc,qty:1,r1:'',r2:'',r3:'',time:new Date().toLocaleString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})});
   await dp({name:cf,scans});await rr();
 }
-async function manualAdd(){const v=document.getElementById('manualInput').value.trim();if(!v)return;if(!mf(v)){toast('已过滤');return;}await add(v);document.getElementById('manualInput').value='';showPop(v);tts(v+' 添加成功');}
-function om(i){ei=i;const s=scans[i];document.getElementById('modalBc').textContent='条码: '+s.bc;document.getElementById('editQty').value=s.qty||1;document.getElementById('r1').value=s.r1||'';document.getElementById('r2').value=s.r2||'';document.getElementById('r3').value=s.r3||'';document.getElementById('modalBg').classList.add('show');}
-function cmm(){document.getElementById('modalBg').classList.remove('show');ei=null;}
-async function sv(){if(ei==null)return;scans[ei].qty=parseInt(document.getElementById('editQty').value)||1;scans[ei].r1=document.getElementById('r1').value.trim();scans[ei].r2=document.getElementById('r2').value.trim();scans[ei].r3=document.getElementById('r3').value.trim();await dp({name:cf,scans});await rr();cmm();toast('已保存');}
-async function di(){if(ei==null||!confirm('删除？'))return;scans.splice(ei,1);await dp({name:cf,scans});await rr();cmm();toast('已删除');}
-async function ca(){if(!scans.length||!confirm('清空「'+cf+'」全部 '+scans.length+' 条？'))return;await dp({name:cf,scans:[]});await rr();toast('已清空');}
+async function manualAdd(){const v=document.getElementById('manualInput').value.trim();if(!v)return;if(!mf(v)){toast('已过滤');document.getElementById('manualInput').value='';return;}await add(v);document.getElementById('manualInput').value='';showPop(v);tts(v+' 扫码成功');}
 
-// ═══════ 导出 ═══════
-function pe(){if(!scans.length){toast('无数据');return;}document.getElementById('previewInfo').textContent='「'+cf+'」共 '+scans.length+' 条';let h='<table class="preview-table"><tr><th>扫码内容</th><th>数量</th><th>备注1</th><th>备注2</th><th>备注3</th><th>扫码时间</th></tr>';scans.forEach(s=>{h+='<tr><td>'+eh(s.bc)+'</td><td>'+(s.qty||1)+'</td><td>'+eh(s.r1)+'</td><td>'+eh(s.r2)+'</td><td>'+eh(s.r3)+'</td><td>'+s.time+'</td></tr>';});h+='</table>';document.getElementById('previewContent').innerHTML=h;document.getElementById('previewBg').classList.add('show');}
-function cpe(){document.getElementById('previewBg').classList.remove('show');}
-function de(){const d=new Date(),ds=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getDate().toString().padStart(2,'0');const data=[['扫码内容','数量','备注1','备注2','备注3','扫码时间']];scans.forEach(s=>data.push([s.bc,s.qty||1,s.r1,s.r2,s.r3,s.time]));const ws=XLSX.utils.aoa_to_sheet(data);ws['!cols']=[{wch:28},{wch:8},{wch:14},{wch:14},{wch:14},{wch:16}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'扫码记录');XLSX.writeFile(wb,cf+'_'+ds+'_'+scans.length+'条.xlsx');cpe();toast('已导出');}
+// ═══════ Settings ═══════
+let cm='dup',gp=500,fm='any';
+function initSettings(){
+  document.querySelectorAll('#countBtns button').forEach(b=>b.classList.toggle('sel',b.dataset.v===cm));
+  document.querySelectorAll('#gapBtns button').forEach(b=>b.classList.toggle('sel',parseInt(b.dataset.v)===gp));
+  document.querySelectorAll('#filterBtns button').forEach(b=>b.classList.toggle('sel',b.dataset.v===fm));
+}
+function openSettings(){initSettings();document.getElementById('settingsBg').classList.add('show');}
+function closeSettings(){
+  // Read values
+  cm=document.querySelector('#countBtns .sel').dataset.v;
+  gp=parseInt(document.querySelector('#gapBtns .sel').dataset.v);
+  fm=document.querySelector('#filterBtns .sel').dataset.v;
+  document.getElementById('settingsBg').classList.remove('show');
+}
+document.getElementById('countBtns').addEventListener('click',function(e){if(e.target.tagName==='BUTTON'){this.querySelectorAll('button').forEach(b=>b.classList.remove('sel'));e.target.classList.add('sel');}});
+document.getElementById('gapBtns').addEventListener('click',function(e){if(e.target.tagName==='BUTTON'){this.querySelectorAll('button').forEach(b=>b.classList.remove('sel'));e.target.classList.add('sel');}});
+document.getElementById('filterBtns').addEventListener('click',function(e){if(e.target.tagName==='BUTTON'){this.querySelectorAll('button').forEach(b=>b.classList.remove('sel'));e.target.classList.add('sel');}});
+function mf(bc){if(fm==='digit')return /^\d/.test(bc);if(fm==='letter')return /^[A-Za-z]/.test(bc);return true;}
+
+// ═══════ Camera ═══════
+let scanner=null,sg=false,co=false;
+function showPop(bc){const p=document.getElementById('scanPop');p.textContent='✓ '+bc;p.classList.add('show');clearTimeout(p._t);p._t=setTimeout(()=>p.classList.remove('show'),900);}
+function tts(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.rate=1;speechSynthesis.speak(u);}catch(e){}}
+function cooldown(){if(gp===0)return;co=true;setTimeout(()=>co=false,gp);}
+
+async function startScan(){
+  if(sg)return;
+  // 预激活语音
+  const u=new SpeechSynthesisUtterance('');u.volume=0;speechSynthesis.speak(u);
+  document.getElementById('btnStart').style.display='none';
+  document.getElementById('btnStop').style.display='inline-block';
+  document.getElementById('camHint').textContent='摄像头开启中…';
+  scanner=new Html5Qrcode("reader");
+  try{
+    await scanner.start({facingMode:"environment"},{fps:30},
+      text=>{const bc=text.trim();if(co)return;if(!mf(bc)){toast('已过滤');return;}add(bc);showPop(bc);tts(bc+' 扫码成功');cooldown();},
+      ()=>{});
+    sg=true;
+    document.getElementById('camHint').textContent='对准条码';
+  }catch(e){
+    document.getElementById('camHint').textContent='错误: '+e.message;
+    toast('摄像头错误');sg=false;if(scanner){try{scanner.stop();}catch(e){}}scanner=null;
+    document.getElementById('btnStart').style.display='inline-block';
+    document.getElementById('btnStop').style.display='none';
+  }
+}
+
+async function stopScan(){
+  if(scanner){try{await scanner.stop();}catch(e){}scanner.clear();scanner=null;}
+  sg=false;
+  document.getElementById('btnStart').style.display='inline-block';
+  document.getElementById('btnStop').style.display='none';
+  document.getElementById('camHint').textContent='就绪';
+}
+
+// ═══════ Edit ═══════
+function openEdit(i){ei=i;const s=scans[i];document.getElementById('editBc').textContent='条码: '+s.bc;document.getElementById('editQty').value=s.qty||1;document.getElementById('r1').value=s.r1||'';document.getElementById('r2').value=s.r2||'';document.getElementById('r3').value=s.r3||'';document.getElementById('editBg').classList.add('show');}
+function closeEdit(){document.getElementById('editBg').classList.remove('show');ei=null;}
+async function sv(){if(ei==null)return;scans[ei].qty=parseInt(document.getElementById('editQty').value)||1;scans[ei].r1=document.getElementById('r1').value.trim();scans[ei].r2=document.getElementById('r2').value.trim();scans[ei].r3=document.getElementById('r3').value.trim();await dp({name:cf,scans});await rr();closeEdit();toast('已保存');}
+async function di(){if(ei==null||!confirm('删除？'))return;scans.splice(ei,1);await dp({name:cf,scans});await rr();closeEdit();toast('已删除');}
+async function ca(){if(!scans.length||!confirm('清空「'+cf+'」全部'+scans.length+'条？'))return;await dp({name:cf,scans:[]});await rr();toast('已清空');}
+
+// ═══════ Export ═══════
+function pe(){if(!scans.length){toast('无数据');return;}document.getElementById('previewInfo').textContent='「'+cf+'」共 '+scans.length+' 条';let h='<table><tr><th>扫码内容</th><th>数量</th><th>备注1</th><th>备注2</th><th>备注3</th><th>扫码时间</th></tr>';scans.forEach(s=>{h+=`<tr><td>${esc(s.bc)}</td><td>${s.qty||1}</td><td>${esc(s.r1)}</td><td>${esc(s.r2)}</td><td>${esc(s.r3)}</td><td>${s.time}</td></tr>`;});h+='</table>';document.getElementById('previewTable').innerHTML=h;document.getElementById('previewBg').classList.add('show');}
+function closePreview(){document.getElementById('previewBg').classList.remove('show');}
+function doExport(){const d=new Date(),ds=`${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;const data=[['扫码内容','数量','备注1','备注2','备注3','扫码时间']];scans.forEach(s=>data.push([s.bc,s.qty||1,s.r1,s.r2,s.r3,s.time]));const ws=XLSX.utils.aoa_to_sheet(data);ws['!cols']=[{wch:28},{wch:8},{wch:14},{wch:14},{wch:14},{wch:16}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'扫码记录');XLSX.writeFile(wb,`${cf}_${ds}_${scans.length}条.xlsx`);closePreview();toast('已导出');}
+
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1800);}
 
 async function init(){if(!db){await odb();await lf();await rr();}else{await lf();await rr();}}
