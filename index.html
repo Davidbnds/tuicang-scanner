@@ -243,10 +243,10 @@ window.addEventListener('resize',setCameraHeight);
 // ═══════ DB ═══════
 const DB='SDB4',ST='s';let db,cf='default';
 function odb(){return new Promise(r=>{const q=indexedDB.open(DB,1);q.onupgradeneeded=e=>{if(!e.target.result.objectStoreNames.contains(ST))e.target.result.createObjectStore(ST,{keyPath:'name'});};q.onsuccess=e=>{db=e.target.result;r();};});}
-function dg(n){return new Promise(r=>{const t=db.transaction(ST,'ro');const q=t.objectStore(ST).get(n);q.onsuccess=()=>r(q.result||{name:n,scans:[]});});}
-function dp(s){return new Promise(r=>{const t=db.transaction(ST,'rw');t.objectStore(ST).put(s);t.oncomplete=()=>r();});}
-function dd(n){return new Promise(r=>{const t=db.transaction(ST,'rw');t.objectStore(ST).delete(n);t.oncomplete=()=>r();});}
-function dl(){return new Promise(r=>{const t=db.transaction(ST,'ro');const q=t.objectStore(ST).getAll();q.onsuccess=()=>r(q.result.map(s=>({name:s.name,count:s.scans.length})));});}
+function dg(n){return new Promise(r=>{const t=db.transaction(ST,'readonly');const q=t.objectStore(ST).get(n);q.onsuccess=()=>r(q.result||{name:n,scans:[]});});}
+function dp(s){return new Promise(r=>{const t=db.transaction(ST,'readwrite');t.objectStore(ST).put(s);t.oncomplete=()=>r();});}
+function dd(n){return new Promise(r=>{const t=db.transaction(ST,'readwrite');t.objectStore(ST).delete(n);t.oncomplete=()=>r();});}
+function dl(){return new Promise(r=>{const t=db.transaction(ST,'readonly');const q=t.objectStore(ST).getAll();q.onsuccess=()=>r(q.result.map(s=>({name:s.name,count:s.scans.length})));});}
 
 // ═══════ Folder ═══════
 async function lf(){const l=await dl();const s=document.getElementById('folderSelect');s.innerHTML=l.map(x=>`<option value="${x.name}">${x.name} (${x.count})</option>`).join('');if(!l.find(x=>x.name===cf))cf=l[0]?.name||'default';s.value=cf;}
