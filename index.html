@@ -256,8 +256,16 @@ async function startScan(){
   if(scanner){try{await scanner.stop();}catch(e){}scanner.clear();scanner=null;}
   scanner=new Html5Qrcode("reader");
   try{
-    await scanner.start({facingMode:"environment"},{fps:15,qrbox:{width:250,height:160},aspectRatio:1,experimentalFeatures:{useBarCodeDetectorIfSupported:true}},
-      async text=>{const bc=text.trim();if(scanCooldown||bc===lastBarcode)return;if(!matchFilter(bc)){toast('已过滤');return;}lastBarcode=bc;await addScan(bc);showScanPop(bc);speak(bc+' 扫码成功');startCooldown();},
+    await scanner.start(
+      {facingMode:"environment"},
+      {fps:10,qrbox:{width:280,height:180},disableFlip:false},
+      async text=>{
+        const bc=text.trim();
+        if(scanCooldown||bc===lastBarcode)return;
+        if(!matchFilter(bc)){toast('已过滤');return;}
+        lastBarcode=bc;await addScan(bc);
+        showScanPop(bc);speak(bc+' 扫码成功');startCooldown();
+      },
       ()=>{});
     scanning=true;
     document.getElementById('btnStartScan').style.display='none';
