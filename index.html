@@ -292,8 +292,8 @@ async function startScan(){
   scanner=new Html5Qrcode("reader");
   try{
     await scanner.start(
-      {facingMode:"environment",width:{ideal:1280},height:{ideal:720}},
-      {fps:30,aspectRatio:1.777},
+      {facingMode:"environment"},
+      {fps:30},
       async text=>{
         const bc=text.trim();
         if(scanCooldown)return;
@@ -306,7 +306,7 @@ async function startScan(){
     document.getElementById('btnStartScan').style.display='none';
     document.getElementById('btnStopScan').style.display='block';
     document.getElementById('hint').textContent='摄像头已开启，对准条码…';
-  }catch(e){toast('摄像头错误: '+e.message);scanner=null;}
+  }catch(e){document.getElementById('hint').textContent='错误: '+e.message;toast('摄像头错误: '+e.message);scanner=null;stopScan();}
 }
 async function stopScan(){
   if(scanner){try{await scanner.stop();}catch(e){}scanner.clear();scanner=null;}
