@@ -107,34 +107,45 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
     <button class="btn-lock" onclick="logout()">锁定</button>
   </div>
 
-  <!-- 文件夹 -->
+  <!-- 步骤1: 文件夹 -->
+  <div style="padding:12px 10px 4px;max-width:500px;margin:0 auto;text-align:center;color:#999;font-size:12px">步骤1 — 选择或新建文件夹</div>
   <div class="folder-bar">
     <select id="folderSelect" onchange="switchFolder()"></select>
     <button class="btn-new" onclick="newFolder()">+新建</button>
     <button class="btn-del-folder" onclick="delFolder()">删</button>
   </div>
 
-  <div class="manual-bar">
-    <input type="text" id="manualInput" placeholder="手动输入条码">
-    <button onclick="manualAdd()">添加</button>
-  </div>
-
+  <!-- 步骤2: 模式 -->
+  <div style="padding:8px 10px 4px;max-width:500px;margin:0 auto;text-align:center;color:#999;font-size:12px">步骤2 — 选择扫描类型</div>
   <div class="mode-bar">
-    <button id="btn-both" class="active" onclick="setMode('both')">条码+二维码</button>
-    <button id="btn-barcode" onclick="setMode('barcode')">仅条形码</button>
-    <button id="btn-qrcode" onclick="setMode('qrcode')">仅二维码</button>
+    <button id="btn-barcode" class="active" onclick="setMode('barcode')">条形码</button>
+    <button id="btn-qrcode" onclick="setMode('qrcode')">二维码</button>
+    <button id="btn-both" onclick="setMode('both')">条码+二维码</button>
   </div>
 
-  <div id="reader-wrap"><div id="reader"></div></div>
-
+  <!-- 步骤3: 开扫 -->
+  <div style="padding:8px 10px 4px;max-width:500px;margin:0 auto;text-align:center;color:#999;font-size:12px">步骤3 — 开始扫码</div>
   <div class="act-bar">
-    <button class="b-start" onclick="startScan()">开始扫码</button>
-    <button class="b-stop" onclick="stopScan()">停止</button>
+    <button class="b-start" onclick="startScan()" id="btnStartScan">开始扫码</button>
+    <button class="b-stop" onclick="stopScan()" id="btnStopScan" style="display:none">停止扫码</button>
+  </div>
+
+  <!-- 扫码区域（默认隐藏） -->
+  <div id="scanArea" style="display:none">
+    <div class="manual-bar">
+      <input type="text" id="manualInput" placeholder="手动输入条码">
+      <button onclick="manualAdd()">添加</button>
+    </div>
+    <div id="reader-wrap"><div id="reader"></div></div>
+    <div class="hint" id="hint">摄像头已开启，对准条码…</div>
+  </div>
+
+  <!-- 操作 -->
+  <div class="act-bar">
     <button class="b-clear" onclick="clearAll()">清空</button>
     <button class="b-export" onclick="previewExport()">导出Excel</button>
   </div>
 
-  <div class="hint" id="hint">选模式 → 点开始扫码</div>
   <div id="list"><div class="empty-state">暂无记录</div></div>
 </div>
 
@@ -244,7 +255,7 @@ function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 function escAttr(s){return(s||'').replace(/"/g,'&quot;');}
 
 // ═══════ 扫码 ═══════
-let scanMode='both',scanner=null,scanning=false;
+let scanMode='barcode',scanner=null,scanning=false;
 
 function setMode(m){scanMode=m;document.querySelectorAll('.mode-bar button').forEach(b=>b.classList.remove('active'));document.getElementById('btn-'+m).classList.add('active');if(scanning){stopScan();startScan();}}
 function modeFmts(){if(scanMode==='barcode')return[Html5QrcodeSupportedFormats.CODE_128,Html5QrcodeSupportedFormats.CODE_39,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E,Html5QrcodeSupportedFormats.CODABAR,Html5QrcodeSupportedFormats.ITF,Html5QrcodeSupportedFormats.PDF_417,Html5QrcodeSupportedFormats.AZTEC,Html5QrcodeSupportedFormats.DATA_MATRIX,Html5QrcodeSupportedFormats.MAXICODE];if(scanMode==='qrcode')return[Html5QrcodeSupportedFormats.QR_CODE];return undefined;}
@@ -263,10 +274,19 @@ async function startScan(){
         startCooldown();
       },
       ()=>{});
-    scanning=true;document.getElementById('hint').textContent='摄像头已开启';
+    scanning=true;
+    document.getElementById('scanArea').style.display='block';
+    document.getElementById('btnStartScan').style.display='none';
+    document.getElementById('btnStopScan').style.display='block';
   }catch(e){toast('摄像头失败: '+e.message);}
 }
-async function stopScan(){if(scanner&&scanning){try{await scanner.stop();}catch(e){}scanning=false;document.getElementById('hint').textContent='已停止';}}
+async function stopScan(){
+  if(scanner&&scanning){try{await scanner.stop();}catch(e){}}
+  scanning=false;
+  document.getElementById('scanArea').style.display='none';
+  document.getElementById('btnStartScan').style.display='block';
+  document.getElementById('btnStopScan').style.display='none';
+}
 
 // 防连扫 + 反馈
 let scanCooldown=false,lastBarcode='';
