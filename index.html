@@ -253,16 +253,37 @@ async function startScan(){
   if(scanning)return;if(!scanner)scanner=new Html5Qrcode("reader");
   try{
     await scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:280,height:180},formatsToSupport:modeFmts()},
-      async text=>{await addScan(text.trim());showScanPop();speak('扫码成功');},
+      async text=>{
+        const bc=text.trim();
+        if(scanCooldown||bc===lastBarcode){return;}
+        lastBarcode=bc;
+        await addScan(bc);
+        showScanPop(bc);
+        speak(bc+' 扫码成功');
+        startCooldown();
+      },
       ()=>{});
     scanning=true;document.getElementById('hint').textContent='摄像头已开启';
   }catch(e){toast('摄像头失败: '+e.message);}
 }
 async function stopScan(){if(scanner&&scanning){try{await scanner.stop();}catch(e){}scanning=false;document.getElementById('hint').textContent='已停止';}}
 
-// 扫码反馈
-function showScanPop(){const p=document.getElementById('scanPop');p.classList.add('show');clearTimeout(p._t);p._t=setTimeout(()=>p.classList.remove('show'),600);}
-function speak(text){try{const u=new SpeechSynthesisUtterance(text);u.lang='zh-CN';u.rate=1.1;speechSynthesis.speak(u);}catch(e){}}
+// 防连扫 + 反馈
+let scanCooldown=false,lastBarcode='';
+function showScanPop(bc){const p=document.getElementById('scanPop');p.innerHTML='✓ '+escHtml(bc);p.classList.add('show');clearTimeout(p._t);p._t=setTimeout(()=>p.classList.remove('show'),1200);}
+function speak(text){
+  try{
+    speechSynthesis.cancel(); // 先清掉之前的
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='zh-CN';u.rate=0.9;u.volume=1;
+    // 有些浏览器需要延迟一下
+    setTimeout(()=>speechSynthesis.speak(u),100);
+  }catch(e){}
+}
+function startCooldown(ms=1800){
+  scanCooldown=true;
+  setTimeout(()=>{scanCooldown=false;},ms);
+}
 
 // ═══════ 操作 ═══════
 async function addScan(bc){
@@ -270,7 +291,7 @@ async function addScan(bc){
   await dbPut({name:currentFolder,scans});
   await render();
 }
-async function manualAdd(){const v=document.getElementById('manualInput').value.trim();if(!v)return;await addScan(v);document.getElementById('manualInput').value='';document.getElementById('manualInput').focus();showScanPop();speak('扫码成功');}
+async function manualAdd(){const v=document.getElementById('manualInput').value.trim();if(!v)return;await addScan(v);document.getElementById('manualInput').value='';document.getElementById('manualInput').focus();showScanPop(v);speak(v+' 扫码成功');}
 function openModal(i){editId=i;const s=scans[i];document.getElementById('modalBc').textContent='条码: '+s.bc;document.getElementById('editQty').value=s.qty||1;document.getElementById('r1').value=s.r1||'';document.getElementById('r2').value=s.r2||'';document.getElementById('r3').value=s.r3||'';document.getElementById('modalBg').classList.add('show');}
 function closeModal(){document.getElementById('modalBg').classList.remove('show');editId=null;}
 async function saveRemarks(){
