@@ -136,7 +136,10 @@ body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;us
     <button style="background:none;border:1px solid rgba(255,255,255,.4);color:rgba(255,255,255,.6);padding:5px 8px;border-radius:5px;font-size:10px;cursor:pointer" onclick="if(confirm('清空「'+cf+'」？'))ca()">清空</button>
   </div>
   <!-- Camera -->
-  <div id="reader" style="width:100%"></div>
+  <div style="background:#000;flex-shrink:0">
+    <div id="reader" style="width:100%;min-height:240px"></div>
+    <div style="text-align:center;color:#fff;font-size:12px;padding:4px" id="camHint">就绪</div>
+  </div>
   <div style="display:flex;gap:4px;padding:4px 8px;background:#fff;flex-shrink:0">
     <input type="text" id="manualInput" placeholder="手动输入条码" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:Consolas,monospace;outline:none" onkeydown="if(event.key==='Enter')manualAdd()">
     <button onclick="manualAdd()" style="padding:8px 14px;background:#4472C4;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer">添加</button>
