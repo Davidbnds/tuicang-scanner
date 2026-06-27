@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="David扫码">
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@undecaf/zbar-wasm@0.11.0/dist/main.js"></script>
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -298,7 +299,7 @@ async function startScan(){
   if(scanner){try{await scanner.stop();}catch(e){}scanner.clear();}
   scanner=new Html5Qrcode("reader");
   try{
-    await scanner.start({facingMode:"environment"},{fps:30},
+    await scanner.start({facingMode:"environment"},{fps:15,qrbox:{width:280,height:200},disableFlip:false},
       text=>{const bc=text.trim();if(co)return;if(!mf(bc)){toast('已过滤');return;}add(bc);showPop(bc);tts('扫码成功');cooldown();},
       ()=>{});
     sg=true;
