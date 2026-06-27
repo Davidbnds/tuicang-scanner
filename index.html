@@ -299,7 +299,7 @@ async function startScan(){
   if(scanner){try{await scanner.stop();}catch(e){}scanner.clear();}
   scanner=new Html5Qrcode("reader");
   try{
-    await scanner.start({facingMode:"environment"},{fps:15,qrbox:{width:280,height:200},disableFlip:false},
+    await scanner.start({facingMode:"environment"},{fps:20},
       text=>{const bc=text.trim();if(co)return;if(!mf(bc)){toast('已过滤');return;}add(bc);showPop(bc);tts('扫码成功');cooldown();},
       ()=>{});
     sg=true;
